@@ -1,0 +1,214 @@
+/* Mandi Saathi - Global Layout & Navigation Styles */
+
+/* App Header */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(31, 58, 43, 0.03);
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--primary-light);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-dark);
+}
+
+/* Desktop Navigation */
+.desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  color: var(--text);
+  background: rgba(225, 239, 228, 0.5);
+}
+
+.nav-link.active {
+  color: var(--primary-dark);
+  background: var(--primary-light);
+  font-weight: 600;
+}
+
+/* Language Switcher */
+.lang-switcher {
+  display: flex;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  gap: 2px;
+}
+
+.lang-btn {
+  border: none;
+  background: transparent;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.2s ease;
+  min-height: 32px;
+}
+
+.lang-btn:hover {
+  color: var(--text);
+}
+
+.lang-btn.active {
+  background: var(--primary-dark);
+  color: #FFFFFF;
+}
+
+/* Main Content Area */
+.app-main {
+  flex: 1;
+  padding: 24px 0 96px 0; /* Space for bottom tab bar on mobile */
+}
+
+@media (min-width: 768px) {
+  .app-main {
+    padding: 32px 0 48px 0;
+  }
+}
+
+/* Mobile Bottom Tab Bar */
+.bottom-tab-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  padding: 6px 12px 10px 12px;
+  z-index: 100;
+  box-shadow: 0 -4px 16px rgba(31, 58, 43, 0.05);
+}
+
+.tab-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.tab-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  min-width: 56px;
+  transition: all 0.2s ease;
+}
+
+.tab-link i {
+  width: 22px;
+  height: 22px;
+}
+
+.tab-link.active {
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.tab-link.active i {
+  stroke-width: 2.5px;
+}
+
+/* App Footer */
+.app-footer {
+  background: #FFFFFF;
+  border-top: 1px solid var(--border);
+  padding: 20px 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: auto;
+}
+
+.app-footer a {
+  color: var(--primary-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.hackathon-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  background: var(--sky);
+  color: #0277BD;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+  .desktop-nav {
+    display: none;
+  }
+  .bottom-tab-bar {
+    display: block;
+  }
+  .app-footer {
+    margin-bottom: 64px; /* Space above bottom bar */
+  }
+}

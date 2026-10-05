@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mandi Saathi - AI Price & Sell-Timing Advisor for Indian Farmers</title>
+  <meta name="description" content="AI mandi price and sell-timing advisor for Indian farmers. Make data-driven decisions on where and when to sell crops for maximum net return.">
+
+  <!-- Favicon / Apple Touch Icon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Chart.js via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Mandi Saathi CSS -->
+  <link rel="stylesheet" href="./css/theme.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+  <!-- Top Bar / Header -->
+  <header class="app-header">
+    <div class="container header-container">
+      <a href="#/advisor" class="brand-logo">
+        <div class="brand-icon">
+          <i data-lucide="leaf"></i>
+        </div>
+        <span data-i18n="brand_name">Mandi Saathi</span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="desktop-nav" aria-label="Main Navigation">
+        <a href="#/advisor" class="nav-link" data-route>
+          <i data-lucide="compass"></i>
+          <span data-i18n="nav_advisor">Advisor</span>
+        </a>
+        <a href="#/chat" class="nav-link" data-route>
+          <i data-lucide="message-square"></i>
+          <span data-i18n="nav_chat">Voice Chat</span>
+        </a>
+        <a href="#/alerts" class="nav-link" data-route>
+          <i data-lucide="bell"></i>
+          <span data-i18n="nav_alerts">Alerts</span>
+        </a>
+        <a href="#/proof" class="nav-link" data-route>
+          <i data-lucide="scale"></i>
+          <span data-i18n="nav_proof">Proof / Math</span>
+        </a>
+        <a href="#/about" class="nav-link" data-route>
+          <i data-lucide="info"></i>
+          <span data-i18n="nav_about">About</span>
+        </a>
+        <a href="#/design" class="nav-link" data-route style="font-size: 0.8rem; border: 1px dashed var(--border);">
+          <i data-lucide="palette"></i>
+          <span data-i18n="nav_design">UI System</span>
+        </a>
+      </nav>
+
+      <!-- Language Switcher (EN / HI / MR) -->
+      <div class="lang-switcher" role="group" aria-label="Language Selector">
+        <button class="lang-btn active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="hi">हिन्दी</button>
+        <button class="lang-btn" data-lang="mr">मराठी</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dynamic Content Injected by Hash Router -->
+  <main id="app-root" class="app-main"></main>
+
+  <!-- Mobile Bottom Tab Bar -->
+  <nav class="bottom-tab-bar" aria-label="Mobile Navigation">
+    <div class="tab-nav">
+      <a href="#/advisor" class="tab-link active" data-route>
+        <i data-lucide="compass"></i>
+        <span data-i18n="nav_advisor">Advisor</span>
+      </a>
+      <a href="#/chat" class="tab-link" data-route>
+        <i data-lucide="mic"></i>
+        <span data-i18n="nav_chat">Chat</span>
+      </a>
+      <a href="#/alerts" class="tab-link" data-route>
+        <i data-lucide="bell"></i>
+        <span data-i18n="nav_alerts">Alerts</span>
+      </a>
+      <a href="#/proof" class="tab-link" data-route>
+        <i data-lucide="scale"></i>
+        <span data-i18n="nav_proof">Proof</span>
+      </a>
+      <a href="#/about" class="tab-link" data-route>
+        <i data-lucide="info"></i>
+        <span data-i18n="nav_about">About</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Global Footer -->
+  <footer class="app-footer">
+    <div class="container footer-content">
+      <div>
+        <span class="hackathon-badge" data-i18n="footer_hackathon">VORTEX 2K26 • Climate, Agriculture & Rural Innovation</span>
+      </div>
+      <div>
+        <span data-i18n="footer_credit">Data source: Agmarknet (agmarknet.gov.in) via data.gov.in</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- App Entry Script -->
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
