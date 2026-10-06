@@ -11,13 +11,15 @@ router = APIRouter(prefix="/api", tags=["Advisory"])
 
 class AdvisoryRequest(BaseModel):
     crop: str = Field(..., example="Tomato")
-    district: str = Field(..., example="Pune")
-    quantity_quintals: float = Field(20.0, ge=0.1, example=20.0)
-    vehicle_type: str = Field("tempo", example="tempo")
+    district: Optional[str] = Field("Pune", example="Pune")
+    lat: Optional[float] = Field(None, example=18.5204)
+    lng: Optional[float] = Field(None, example=73.8567)
+    quantity: Optional[float] = Field(None, example=20.0)
+    quantity_quintals: Optional[float] = Field(None, example=20.0)
+    vehicle: Optional[str] = Field(None, example="tempo")
+    vehicle_type: Optional[str] = Field(None, example="tempo")
     departure_hour: float = Field(7.0, ge=0.0, le=24.0, example=7.0)
     language: Optional[str] = Field("en", example="mr")
-    origin_lat: Optional[float] = None
-    origin_lng: Optional[float] = None
     overrides: Optional[Dict[str, Any]] = None
 
 
@@ -28,14 +30,17 @@ def get_recommendation(payload: AdvisoryRequest):
     taking into account transit time, vehicle cost, auction cutoff, and spoilage.
     """
     try:
+        qty = payload.quantity_quintals if payload.quantity_quintals is not None else (payload.quantity if payload.quantity is not None else 20.0)
+        veh = payload.vehicle_type if payload.vehicle_type is not None else (payload.vehicle if payload.vehicle is not None else "tempo")
+
         result = calculate_advisory(
             crop=payload.crop,
             district=payload.district,
-            quantity_quintals=payload.quantity_quintals,
-            vehicle_type=payload.vehicle_type,
+            lat=payload.lat,
+            lng=payload.lng,
+            quantity_quintals=qty,
+            vehicle_type=veh,
             departure_hour=payload.departure_hour,
-            origin_lat=payload.origin_lat,
-            origin_lng=payload.origin_lng,
             overrides=payload.overrides
         )
         if "error" in result and result.get("best_recommendation") is None:
