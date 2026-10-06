@@ -1,0 +1,38 @@
+# Mandi Saathi — Default Economic and Operational Parameters
+
+vehicles:
+  bike:
+    rate_per_km: 6.0
+    capacity_quintals: 2.0
+    avg_speed_kmh: 40.0
+  tempo:
+    rate_per_km: 18.0
+    capacity_quintals: 25.0
+    avg_speed_kmh: 45.0
+  truck:
+    rate_per_km: 30.0
+    capacity_quintals: 100.0
+    avg_speed_kmh: 40.0
+
+handling:
+  loading_per_quintal: 15.0
+  unloading_per_quintal: 15.0
+  overnight_holding_per_quintal: 12.0
+
+market_fees:
+  apmc_cess_percentage: 1.5
+
+crop_perishability_daily_rate:
+  Tomato: 0.025
+  Potato: 0.005
+  Onion: 0.003
+  Soyabean: 0.0005
+  Soybean: 0.0005
+  Red gram/Arhar/Tur(whole): 0.0005
+  Tur: 0.0005
+  Cotton: 0.0005
+  Wheat: 0.0005
+
+operational:
+  default_auction_cutoff: "12:00"
+  cautious_forecast_haircut: 0.04

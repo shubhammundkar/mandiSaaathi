@@ -37,6 +37,13 @@ def health_check():
         "hackathon": "VORTEX 2K26"
     }
 
+from backend.routes.crops import router as crops_router
+from backend.routes.advisor import router as advisor_router
+
+# Include API Routers
+app.include_router(crops_router)
+app.include_router(advisor_router)
+
 # Mount static files for frontend at root
 FRONTEND_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")

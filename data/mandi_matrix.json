@@ -1,0 +1,156 @@
+{
+  "description": "Maharashtra Mandi Matrix with coverage, approximate coordinates, and default auction cutoffs",
+  "default_auction_cutoff": "12:00",
+  "mandis": [
+    {
+      "market": "Pune",
+      "district": "Pune",
+      "lat": 18.4975,
+      "lng": 73.8680,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Potato", "Soyabean", "Tomato", "Wheat"],
+      "coverage_records": 389
+    },
+    {
+      "market": "Ahmednagar",
+      "district": "Ahilyanagar",
+      "lat": 19.0948,
+      "lng": 74.7480,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Red gram/Arhar/Tur(whole)", "Soyabean", "Wheat"],
+      "coverage_records": 312
+    },
+    {
+      "market": "Baramati",
+      "district": "Pune",
+      "lat": 18.1517,
+      "lng": 74.5772,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Soyabean", "Tomato", "Wheat"],
+      "coverage_records": 312
+    },
+    {
+      "market": "Kolhapur",
+      "district": "Kolhapur",
+      "lat": 16.7050,
+      "lng": 74.2433,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Potato", "Tomato", "Wheat"],
+      "coverage_records": 312
+    },
+    {
+      "market": "Mumbai",
+      "district": "Mumbai",
+      "lat": 19.0760,
+      "lng": 73.0033,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Potato", "Tomato", "Wheat"],
+      "coverage_records": 312
+    },
+    {
+      "market": "Jalgaon",
+      "district": "Jalgaon",
+      "lat": 21.0077,
+      "lng": 75.5626,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Cotton", "Onion", "Soyabean", "Wheat"],
+      "coverage_records": 311
+    },
+    {
+      "market": "Nashik",
+      "district": "Nashik",
+      "lat": 19.9975,
+      "lng": 73.7898,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Potato", "Tomato", "Wheat"],
+      "coverage_records": 310
+    },
+    {
+      "market": "Nagpur",
+      "district": "Nagpur",
+      "lat": 21.1458,
+      "lng": 79.1340,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Cotton", "Soyabean", "Tomato", "Wheat"],
+      "coverage_records": 309
+    },
+    {
+      "market": "Solapur",
+      "district": "Solapur",
+      "lat": 17.6599,
+      "lng": 75.9064,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Red gram/Arhar/Tur(whole)", "Soyabean", "Wheat"],
+      "coverage_records": 308
+    },
+    {
+      "market": "Akola",
+      "district": "Akola",
+      "lat": 20.7002,
+      "lng": 77.0082,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Cotton", "Red gram/Arhar/Tur(whole)", "Soyabean", "Wheat"],
+      "coverage_records": 307
+    },
+    {
+      "market": "Khed(Chakan)",
+      "district": "Pune",
+      "lat": 18.7562,
+      "lng": 73.8541,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Potato", "Tomato"],
+      "coverage_records": 234
+    },
+    {
+      "market": "Manchar",
+      "district": "Pune",
+      "lat": 19.0042,
+      "lng": 73.9431,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Potato", "Tomato"],
+      "coverage_records": 234
+    },
+    {
+      "market": "Sangamner",
+      "district": "Ahilyanagar",
+      "lat": 19.5772,
+      "lng": 74.2081,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Soyabean", "Tomato"],
+      "coverage_records": 234
+    },
+    {
+      "market": "Yeola",
+      "district": "Nashik",
+      "lat": 20.0425,
+      "lng": 74.4892,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Soyabean", "Wheat"],
+      "coverage_records": 234
+    },
+    {
+      "market": "Amravati",
+      "district": "Amravati",
+      "lat": 20.9374,
+      "lng": 77.7796,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Cotton", "Red gram/Arhar/Tur(whole)", "Soyabean"],
+      "coverage_records": 233
+    }
+  ]
+}

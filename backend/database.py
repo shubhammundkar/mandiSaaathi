@@ -15,26 +15,44 @@ def init_db() -> None:
                 market TEXT NOT NULL,
                 commodity TEXT NOT NULL,
                 variety TEXT,
+                grade TEXT,
                 arrival_date TEXT NOT NULL,
                 min_price REAL NOT NULL,
                 max_price REAL NOT NULL,
                 modal_price REAL NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                arrival_quantity REAL,
+                source TEXT NOT NULL DEFAULT 'snapshot' CHECK(source IN ('live', 'snapshot', 'sample')),
+                is_sample INTEGER DEFAULT 0,
+                fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+        """)
+        cursor.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_mandi_prices 
+            ON mandi_prices(market, commodity, variety, arrival_date);
         """)
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_commodity_market 
             ON mandi_prices(commodity, market, arrival_date);
         """)
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS user_alerts (
+            CREATE TABLE IF NOT EXISTS alert_subscriptions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 crop TEXT NOT NULL,
-                mandi TEXT NOT NULL,
-                target_price REAL NOT NULL,
-                phone TEXT,
-                language TEXT DEFAULT 'en',
+                district TEXT NOT NULL,
+                language TEXT DEFAULT 'mr',
+                nickname TEXT,
                 is_active INTEGER DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS farmer_reports (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                crop TEXT NOT NULL,
+                market TEXT NOT NULL,
+                price REAL NOT NULL,
+                quantity REAL,
+                report_date TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         """)
