@@ -214,7 +214,8 @@ def rank_and_evaluate(
     district: str,
     quantity_quintals: float,
     vehicle_type: str,
-    departure_hour: float
+    departure_hour: float,
+    config: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """Sorts evaluated mandis, calculates break-even against nearest, and formats verdict."""
     if not evaluated:
@@ -224,6 +225,10 @@ def rank_and_evaluate(
             "best_recommendation": None,
             "comparisons": []
         }
+
+    config = config or load_config()
+    fee_pct = float(config.get("market_fee_percent", 1.5)) / 100.0
+    crop_spoil_rate = float(config.get("spoilage_per_day", {}).get(crop, 0.005))
 
     # Find nearest mandi to serve as baseline
     nearest_mandi = min(evaluated, key=lambda x: x["distance_km"])
@@ -237,11 +242,9 @@ def rank_and_evaluate(
         else:
             item["is_nearest"] = False
             # Price needed so that: Net_far = nearest_net
-            # P_be - (trans + load + fee + spoil) = nearest_net
             # P_be * (1 - fee_rate - spoil_factor) = nearest_net + trans + load
-            fee_factor = 0.015
-            spoil_factor = (item["travel_hours"] / 24.0) * 0.01
-            denom = max(0.5, 1.0 - fee_factor - spoil_factor)
+            spoil_factor = (item["travel_hours"] / 24.0) * crop_spoil_rate
+            denom = max(0.5, 1.0 - fee_pct - spoil_factor)
             be_price = (nearest_net + item["costs"]["transport_per_q"] + item["costs"]["loading_unloading_per_q"]) / denom
             item["break_even_price"] = round(be_price, 2)
 
@@ -349,5 +352,6 @@ def calculate_advisory(
         district=district,
         quantity_quintals=quantity_quintals,
         vehicle_type=vehicle_type,
-        departure_hour=departure_hour
+        departure_hour=departure_hour,
+        config=config
     )
