@@ -69,17 +69,21 @@ def get_crops() -> List[Dict[str, Any]]:
     return rows
 
 
+from backend.services.agmarknet_fetcher import get_canonical_commodity_name
+
+
 def get_mandis(crop: Optional[str] = None) -> List[Dict[str, Any]]:
     """Returns metadata for all mandis, optionally filtered by commodity."""
     matrix = load_mandi_matrix()
     matrix_map = {m["market"]: m for m in matrix.get("mandis", [])}
 
     if crop:
+        canonical = get_canonical_commodity_name(crop)
         rows = fetch_all("""
             SELECT DISTINCT market, district
             FROM mandi_prices
-            WHERE commodity = ?
-        """, (crop,))
+            WHERE commodity = ? OR commodity = ?
+        """, (crop, canonical))
     else:
         rows = fetch_all("""
             SELECT DISTINCT market, district
@@ -102,16 +106,18 @@ def get_mandis(crop: Optional[str] = None) -> List[Dict[str, Any]]:
 
 def get_latest_prices_for_crop(crop: str) -> List[Dict[str, Any]]:
     """Returns the most recent price record per mandi for a given crop."""
+    canonical = get_canonical_commodity_name(crop)
     rows = fetch_all("""
         SELECT mp.*
         FROM mandi_prices mp
         INNER JOIN (
             SELECT market, MAX(arrival_date) as max_date
             FROM mandi_prices
-            WHERE commodity = ?
+            WHERE commodity = ? OR commodity = ?
             GROUP BY market
         ) latest ON mp.market = latest.market AND mp.arrival_date = latest.max_date
-        WHERE mp.commodity = ?
+        WHERE mp.commodity = ? OR mp.commodity = ?
         ORDER BY mp.modal_price DESC
-    """, (crop, crop))
+    """, (crop, canonical, crop, canonical))
     return rows
+

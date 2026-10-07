@@ -483,17 +483,30 @@ function renderEmptyState(resultsDiv, crop, district) {
 
 // Clean Error State with Retry
 function renderErrorState(resultsDiv, errorMessage, container) {
+  const isNetworkOrDown = !errorMessage || 
+    errorMessage.toLowerCase().includes('failed to fetch') ||
+    errorMessage.toLowerCase().includes('network') ||
+    errorMessage.toLowerCase().includes('connection') ||
+    errorMessage.toLowerCase().includes('timed out');
+
+  const titleText = isNetworkOrDown ? t('error_title') : 'Calculation Error';
+  const descText = isNetworkOrDown ? t('error_server_down') : errorMessage;
+
   resultsDiv.innerHTML = `
-    <div class="card" style="padding: 32px 24px; text-align: center; border: 1.5px solid var(--red-soft); margin-bottom: 24px;">
+    <div class="card" style="padding: 32px 20px; text-align: center; border: 1.5px solid var(--red-soft); margin-bottom: 24px;">
       <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--red-soft); color: #C62828; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
-        <i data-lucide="alert-octagon" style="width: 28px; height: 28px;"></i>
+        <i data-lucide="${isNetworkOrDown ? 'wifi-off' : 'alert-octagon'}" style="width: 28px; height: 28px;"></i>
       </div>
-      <div class="badge badge-red" style="margin-bottom: 10px;">Advisory Engine Notice</div>
-      <h3 style="font-size: 1.2rem; margin-bottom: 8px;">Calculation Error</h3>
-      <p style="color: var(--muted); max-width: 480px; margin: 0 auto 20px; font-size: 0.95rem;">
-        ${errorMessage || 'Failed to communicate with calculation service.'}
+      <div class="badge badge-red" style="margin-bottom: 10px;">
+        ${isNetworkOrDown ? 'Connection Notice' : 'Advisory Engine Notice'}
+      </div>
+      <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 8px;">
+        ${titleText}
+      </h3>
+      <p style="color: var(--muted); max-width: 480px; margin: 0 auto 20px; font-size: 0.95rem; line-height: 1.5;">
+        ${descText}
       </p>
-      <button type="button" class="btn btn-primary" id="btn-retry-advise">
+      <button type="button" class="btn btn-primary" id="btn-retry-advise" style="margin: 0 auto;">
         <i data-lucide="rotate-cw"></i>
         <span data-i18n="btn_retry">${t('btn_retry')}</span>
       </button>
@@ -648,11 +661,11 @@ function renderResults(container) {
 
   resultsDiv.innerHTML = `
     <!-- 1. Best Option Hero Card -->
-    <div class="card" style="background: linear-gradient(145deg, #FFFFFF 0%, var(--bg) 100%); border: 2.5px solid var(--primary-dark); padding: 28px; margin-bottom: 24px; box-shadow: var(--shadow-md);">
+    <div class="card" style="background: linear-gradient(145deg, #FFFFFF 0%, var(--bg) 100%); border: 2.5px solid var(--primary-dark); padding: clamp(16px, 4vw, 28px); margin-bottom: 24px; box-shadow: var(--shadow-md); overflow: hidden; word-break: break-word;">
       
       <!-- Card Header -->
       <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px;">
-        <div>
+        <div style="max-width: 100%;">
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
             <span class="badge badge-green" style="font-size: 0.85rem; padding: 4px 14px;">
               <i data-lucide="award" style="width: 14px; height: 14px;"></i>
@@ -664,70 +677,70 @@ function renderResults(container) {
             ${getFreshnessBadge(best.days_ago, best.arrival_date)}
             ${best.missed_cutoff ? `<span class="badge badge-peach">Auction Day+1</span>` : `<span class="badge badge-green">Today's Auction</span>`}
           </div>
-          <h2 style="font-size: 2.2rem; font-weight: 700; color: var(--text); margin: 4px 0;">
-            ${best.market} <span style="font-size: 1.15rem; font-weight: 500; color: var(--muted);">(${best.district} District)</span>
+          <h2 style="font-size: clamp(1.4rem, 5vw, 2.2rem); font-weight: 700; color: var(--text); margin: 4px 0; word-break: break-word;">
+            ${best.market} <span style="font-size: clamp(0.95rem, 3.5vw, 1.15rem); font-weight: 500; color: var(--muted);">(${best.district} District)</span>
           </h2>
         </div>
 
         <!-- Voice Audio Button -->
-        <button type="button" class="btn btn-ghost" id="btn-voice-listen" style="border-radius: var(--radius-pill); border: 1.5px solid var(--primary-dark); color: var(--primary-dark); font-weight: 600; padding: 10px 18px;">
+        <button type="button" class="btn btn-ghost" id="btn-voice-listen" style="border-radius: var(--radius-pill); border: 1.5px solid var(--primary-dark); color: var(--primary-dark); font-weight: 600; padding: 8px 16px; font-size: 0.9rem;">
           <i data-lucide="volume-2"></i>
           <span id="voice-btn-text" data-i18n="btn_listen">${t('btn_listen')}</span>
         </button>
       </div>
 
       <!-- Financial Numbers Highlight -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0; padding: 20px; background: #FFFFFF; border-radius: var(--radius-md); border: 1px solid var(--border);">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px; margin: 18px 0; padding: clamp(14px, 3vw, 20px); background: #FFFFFF; border-radius: var(--radius-md); border: 1px solid var(--border);">
         <div>
           <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 4px;" data-i18n="results_net_return">${t('results_net_return')}</div>
-          <div style="font-size: 2.1rem; font-weight: 700; color: #2E7D32;">
+          <div style="font-size: clamp(1.4rem, 5vw, 2.1rem); font-weight: 700; color: #2E7D32;">
             ₹${best.net_return_per_quintal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            <span style="font-size: 0.9rem; font-weight: 500; color: var(--muted);">/quintal</span>
+            <span style="font-size: 0.85rem; font-weight: 500; color: var(--muted);">/q</span>
           </div>
-          <div style="font-size: 0.85rem; font-weight: 600; color: ${best.gain_vs_nearest_per_quintal > 0 ? '#2E7D32' : 'var(--muted)'}; margin-top: 4px;">
+          <div style="font-size: 0.8rem; font-weight: 600; color: ${best.gain_vs_nearest_per_quintal > 0 ? '#2E7D32' : 'var(--muted)'}; margin-top: 4px;">
             ${gainText}
           </div>
         </div>
 
         <div>
           <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 4px;" data-i18n="results_total_earnings">${t('results_total_earnings')}</div>
-          <div style="font-size: 2.1rem; font-weight: 700; color: var(--text);">
+          <div style="font-size: clamp(1.4rem, 5vw, 2.1rem); font-weight: 700; color: var(--text);">
             ₹${best.total_net_earnings.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </div>
-          <div style="font-size: 0.85rem; color: var(--muted); margin-top: 4px;">
+          <div style="font-size: 0.8rem; color: var(--muted); margin-top: 4px;">
             For your ${state.quantity} quintals batch
           </div>
         </div>
       </div>
 
       <!-- One-line verdict reasoning -->
-      <div style="background: var(--primary-light); border-left: 4px solid var(--primary-dark); padding: 12px 16px; border-radius: 4px; margin-bottom: 20px;">
-        <p style="font-weight: 500; color: var(--text); font-size: 0.95rem; margin: 0;">
+      <div style="background: var(--primary-light); border-left: 4px solid var(--primary-dark); padding: 12px 16px; border-radius: 4px; margin-bottom: 18px; word-break: break-word;">
+        <p style="font-weight: 500; color: var(--text); font-size: 0.95rem; margin: 0; line-height: 1.45;">
           ${best.verdict_reason}
         </p>
       </div>
 
       <!-- Cost Breakdown Tags -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; font-size: 0.85rem;">
-        <div style="background: #FFFFFF; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-          <div style="color: var(--muted);" data-i18n="results_gross_price">${t('results_gross_price')}</div>
-          <div style="font-weight: 600; font-size: 1rem;">₹${best.gross_modal_price.toFixed(2)}</div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(95px, 1fr)); gap: 8px; font-size: 0.85rem;">
+        <div style="background: #FFFFFF; padding: 10px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
+          <div style="color: var(--muted); font-size: 0.75rem;" data-i18n="results_gross_price">${t('results_gross_price')}</div>
+          <div style="font-weight: 600; font-size: 0.95rem;">₹${best.gross_modal_price.toFixed(2)}</div>
         </div>
-        <div style="background: #FFFFFF; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-          <div style="color: var(--muted);">Transport / q</div>
-          <div style="font-weight: 600; font-size: 1rem; color: #C62828;">-₹${best.costs.transport_per_q.toFixed(2)}</div>
+        <div style="background: #FFFFFF; padding: 10px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
+          <div style="color: var(--muted); font-size: 0.75rem;">Transport / q</div>
+          <div style="font-weight: 600; font-size: 0.95rem; color: #C62828;">-₹${best.costs.transport_per_q.toFixed(2)}</div>
         </div>
-        <div style="background: #FFFFFF; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-          <div style="color: var(--muted);">Labor & Fee / q</div>
-          <div style="font-weight: 600; font-size: 1rem; color: #C62828;">-₹${(best.costs.loading_unloading_per_q + best.costs.market_fee_per_q).toFixed(2)}</div>
+        <div style="background: #FFFFFF; padding: 10px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
+          <div style="color: var(--muted); font-size: 0.75rem;">Fees & Labor</div>
+          <div style="font-weight: 600; font-size: 0.95rem; color: #C62828;">-₹${(best.costs.loading_unloading_per_q + best.costs.market_fee_per_q).toFixed(2)}</div>
         </div>
-        <div style="background: #FFFFFF; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-          <div style="color: var(--muted);">Distance</div>
-          <div style="font-weight: 600; font-size: 1rem;">${best.distance_km} km</div>
+        <div style="background: #FFFFFF; padding: 10px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
+          <div style="color: var(--muted); font-size: 0.75rem;">Distance</div>
+          <div style="font-weight: 600; font-size: 0.95rem;">${best.distance_km} km</div>
         </div>
-        <div style="background: #FFFFFF; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-          <div style="color: var(--muted);">Arrival Time</div>
-          <div style="font-weight: 600; font-size: 1rem;">${best.arrival_time}</div>
+        <div style="background: #FFFFFF; padding: 10px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
+          <div style="color: var(--muted); font-size: 0.75rem;">Arrival</div>
+          <div style="font-weight: 600; font-size: 0.95rem;">${best.arrival_time}</div>
         </div>
       </div>
 
@@ -840,7 +853,7 @@ function renderResults(container) {
 
               <!-- Bottom Metrics Grid -->
               <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border);">
-                <div style="display: flex; gap: 16px; font-size: 0.85rem; color: var(--muted);">
+                <div style="display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.85rem; color: var(--muted);">
                   <span>Freight: <strong style="color: #C62828;">-₹${m.costs.transport_per_q.toFixed(2)}/q</strong></span>
                   <span>Fees & Labor: <strong style="color: #C62828;">-₹${(m.costs.loading_unloading_per_q + m.costs.market_fee_per_q).toFixed(2)}/q</strong></span>
                   <span>Arrival: <strong>${m.arrival_time}</strong></span>

@@ -99,6 +99,8 @@ export const translations = {
     chart_high: "High Bound",
     empty_title: "No Trading Records Found",
     empty_text: "No APMC markets reported transactions for this crop in the selected district recently. Please try another crop or nearby district.",
+    error_title: "Unable to Connect to Mandi Engine",
+    error_server_down: "The Mandi Saathi backend service is offline or unreachable. Please verify your connection or ensure the backend service is running.",
 
     // Footer
     footer_credit: "Data source: Agmarknet (agmarknet.gov.in) via data.gov.in",
@@ -200,6 +202,8 @@ export const translations = {
     chart_high: "अधिकतम सीमा",
     empty_title: "कोई व्यापार रिकॉर्ड नहीं मिला",
     empty_text: "चयनित ज़िले में इस फसल के लिए हाल ही में कोई मंडी भाव दर्ज नहीं हुआ है। कृपया अन्य फसल या नजदीकी ज़िला चुनें।",
+    error_title: "मंडी सेवा से संपर्क नहीं हो पाया",
+    error_server_down: "मंडी साथी बैकएंड सेवा अभी बंद है या संपर्क नहीं हो पा रहा है। कृपया अपना इंटरनेट कनेक्शन जांचें या सर्वर शुरू करें।",
 
     // Footer
     footer_credit: "डेटा स्रोत: Agmarknet (agmarknet.gov.in) via data.gov.in",
@@ -301,6 +305,8 @@ export const translations = {
     chart_high: "कमाल मर्यादा",
     empty_title: "कोणतेही व्यवहार उपलब्ध नाहीत",
     empty_text: "निवडलेल्या जिल्ह्यात या पिकासाठी अलीकडे कोणतेही बाजारभाव नोंदवले गेले नाहीत. कृपया दुसरे पीक किंवा जवळचा जिल्हा निवडा.",
+    error_title: "मंडी सर्व्हरशी संपर्क होऊ शकला नाही",
+    error_server_down: "मंडी साथी बॅकएंड सर्व्हिस सध्या बंद आहे किंवा संपर्क होत नाही आहे. कृपया आपले इंटरनेट कनेक्शन तपासा किंवा सर्व्हर सुरू करा.",
 
     // Footer
     footer_credit: "माहिती स्त्रोत: Agmarknet (agmarknet.gov.in) via data.gov.in",
