@@ -74,3 +74,47 @@ def test_backtest_api_endpoint():
     data_thin = resp_thin.json()
     assert data_thin["status"] == "THIN_DATA"
     assert data_thin["days_tested"] == 0
+
+
+def test_backtest_strictly_no_future_leakage(monkeypatch):
+    """Mathematical proof of zero future leakage.
+
+    Artificially modifying future prices (e.g., multiplying by 10x or zeroing out)
+    must NOT alter the recommended mandi on any prior day.
+    """
+    import backend.services.backtest_engine as bte
+    import pandas as pd
+
+    # 1. Baseline simulation run
+    res_base = bte.run_90_day_backtest("Tomato", "Pune")
+    series_base = res_base["cumulative_series"]
+    assert len(series_base) > 20
+
+    eval_idx = 15
+    target_date = series_base[eval_idx]["date"]
+    advice_base = series_base[eval_idx]["recommended_mandi"]
+
+    # 2. Monkeypatch get_crop_price_history to corrupt all prices ON AND AFTER target_date
+    real_get_history = bte.get_crop_price_history
+
+    def corrupted_history(crop: str) -> pd.DataFrame:
+        df = real_get_history(crop)
+        target_d = pd.to_datetime(target_date).date()
+        # Inflate all future and current day prices by 10x
+        mask = df["arrival_date"] >= target_d
+        df.loc[mask, "modal_price"] = df.loc[mask, "modal_price"] * 10.0
+        return df
+
+    monkeypatch.setattr(bte, "get_crop_price_history", corrupted_history)
+
+    # 3. Re-run simulation with future data corrupted
+    res_corrupted = bte.run_90_day_backtest("Tomato", "Pune")
+    series_corrupted = res_corrupted["cumulative_series"]
+    advice_corrupted = series_corrupted[eval_idx]["recommended_mandi"]
+
+    # 4. Strictly assert that advice made on target_date is completely unchanged
+    assert advice_base == advice_corrupted, (
+        f"Leakage detected! Advice changed from {advice_base} to {advice_corrupted} "
+        f"when future prices on/after {target_date} were altered."
+    )
+
