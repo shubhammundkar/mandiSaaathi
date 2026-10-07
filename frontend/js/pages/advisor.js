@@ -1,6 +1,12 @@
 // Mandi Saathi - Advisor Page
-// Interactive recommendation engine form with 1-click Demo, live data badge,
-// collapsible advanced parameters, 5-day forecast corridor, and voice playback.
+// Full recommendation interface with:
+// - Top Recommendation Hero Card (Net Return, total profit, confidence & freshness badges)
+// - Ranked Mandi Cards with visual Min/Modal/Max bar, distance, travel time, and freight
+// - Break-Even threshold note
+// - Chart.js 5-Day Low/Likely/High Price Outlook with Sell-or-Store Verdict Chip
+// - Trilingual Web Speech API Listen button (MR/HI/EN)
+// - "Estimates, not guarantees" Disclaimer
+// - Shimmer skeleton loading, empty, and error states
 
 import { t, getLanguage } from '../i18n.js';
 import { api } from '../api.js';
@@ -29,7 +35,7 @@ const DEFAULT_DISTRICTS = [
   'Jalgaon', 'Akola', 'Amravati', 'Kolhapur', 'Nagpur', 'Mumbai'
 ];
 
-// Persistent state
+// Persistent UI state
 const state = {
   selectedCrop: 'Tomato',
   selectedDistrict: 'Pune',
@@ -49,8 +55,7 @@ const state = {
   advisoryResult: null,
   forecastResult: null,
   storageResult: null,
-  chartInstance: null,
-  isSpeaking: false
+  chartInstance: null
 };
 
 export async function render(container) {
@@ -429,24 +434,146 @@ async function fetchCrops(container) {
   }
 }
 
+// Shimmer Skeleton Loading State
+function renderLoadingSkeleton(resultsDiv) {
+  resultsDiv.innerHTML = `
+    <div class="card" style="padding: 32px; margin-bottom: 24px;">
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+        <div class="skeleton skeleton-circle" style="width: 56px; height: 56px;"></div>
+        <div style="flex: 1;">
+          <div class="skeleton skeleton-text" style="width: 45%; height: 22px;"></div>
+          <div class="skeleton skeleton-text" style="width: 65%; height: 16px;"></div>
+        </div>
+      </div>
+      <div class="skeleton skeleton-card" style="height: 90px; margin-bottom: 16px;"></div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px;">
+        <div class="skeleton" style="height: 60px;"></div>
+        <div class="skeleton" style="height: 60px;"></div>
+        <div class="skeleton" style="height: 60px;"></div>
+        <div class="skeleton" style="height: 60px;"></div>
+      </div>
+      <div style="text-align: center; color: var(--muted); font-size: 0.95rem;">
+        <span data-i18n="loading_calculating">${t('loading_calculating')}</span>
+      </div>
+    </div>
+  `;
+}
+
+// Clean Empty State
+function renderEmptyState(resultsDiv, crop, district) {
+  resultsDiv.innerHTML = `
+    <div class="card" style="text-align: center; padding: 48px 24px; margin-bottom: 24px;">
+      <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--yellow); color: #8D6E12; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+        <i data-lucide="package-search" style="width: 32px; height: 32px;"></i>
+      </div>
+      <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 8px;" data-i18n="empty_title">
+        ${t('empty_title')}
+      </h3>
+      <p style="color: var(--muted); max-width: 520px; margin: 0 auto 20px; font-size: 0.95rem;" data-i18n="empty_text">
+        ${t('empty_text')}
+      </p>
+      <div style="display: inline-flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+        <span class="badge badge-sky">${crop}</span>
+        <span class="badge badge-sky">${district} District</span>
+      </div>
+    </div>
+  `;
+  if (window.lucide) window.lucide.createIcons();
+}
+
+// Clean Error State with Retry
+function renderErrorState(resultsDiv, errorMessage, container) {
+  resultsDiv.innerHTML = `
+    <div class="card" style="padding: 32px 24px; text-align: center; border: 1.5px solid var(--red-soft); margin-bottom: 24px;">
+      <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--red-soft); color: #C62828; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+        <i data-lucide="alert-octagon" style="width: 28px; height: 28px;"></i>
+      </div>
+      <div class="badge badge-red" style="margin-bottom: 10px;">Advisory Engine Notice</div>
+      <h3 style="font-size: 1.2rem; margin-bottom: 8px;">Calculation Error</h3>
+      <p style="color: var(--muted); max-width: 480px; margin: 0 auto 20px; font-size: 0.95rem;">
+        ${errorMessage || 'Failed to communicate with calculation service.'}
+      </p>
+      <button type="button" class="btn btn-primary" id="btn-retry-advise">
+        <i data-lucide="rotate-cw"></i>
+        <span data-i18n="btn_retry">${t('btn_retry')}</span>
+      </button>
+    </div>
+  `;
+  if (window.lucide) window.lucide.createIcons();
+  const btnRetry = resultsDiv.querySelector('#btn-retry-advise');
+  if (btnRetry) btnRetry.addEventListener('click', () => executeAdvisory(container));
+}
+
+// Helper: Freshness Badge
+function getFreshnessBadge(daysAgo, arrivalDate) {
+  const days = typeof daysAgo === 'number' ? daysAgo : 0;
+  if (days <= 1) {
+    return `
+      <span class="badge badge-green" title="Reported: ${arrivalDate || 'Today'}">
+        <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+        <span data-i18n="freshness_fresh">${t('freshness_fresh')}</span>
+      </span>
+    `;
+  } else if (days <= 3) {
+    return `
+      <span class="badge badge-yellow" title="Reported: ${arrivalDate || `${days}d ago`}">
+        <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+        <span data-i18n="freshness_moderate">${t('freshness_moderate')}</span>
+      </span>
+    `;
+  } else {
+    return `
+      <span class="badge badge-red" title="Reported: ${arrivalDate || `${days}d ago`}">
+        <i data-lucide="alert-triangle" style="width: 12px; height: 12px;"></i>
+        <span data-i18n="freshness_stale">${t('freshness_stale')}</span>
+      </span>
+    `;
+  }
+}
+
+// Helper: Min / Modal / Max graphical price bar
+function renderPriceBar(minPrice, modalPrice, maxPrice) {
+  const min = typeof minPrice === 'number' && minPrice > 0 ? minPrice : (modalPrice * 0.9);
+  const modal = modalPrice;
+  const max = typeof maxPrice === 'number' && maxPrice >= modal ? maxPrice : (modalPrice * 1.1);
+  const span = Math.max(1, max - min);
+  const dotPct = Math.max(4, Math.min(96, ((modal - min) / span) * 100));
+
+  return `
+    <div class="price-bar-container">
+      <div class="price-bar-labels">
+        <span>Min ₹${min.toFixed(0)}</span>
+        <span style="font-weight: 600; color: #2E7D32;">Modal ₹${modal.toFixed(0)}</span>
+        <span>Max ₹${max.toFixed(0)}</span>
+      </div>
+      <div class="price-range-track">
+        <div class="price-range-span" style="left: 0%; width: 100%;"></div>
+        <div class="price-range-dot" style="left: ${dotPct}%;" title="Modal Price: ₹${modal.toFixed(2)}"></div>
+      </div>
+    </div>
+  `;
+}
+
+// Helper: Sell-or-Store Verdict Chip
+function getStorageVerdictChip(storageResult) {
+  if (!storageResult) return '';
+  const rec = storageResult.recommendation || 'Sell now';
+  let badgeClass = 'badge-yellow';
+  if (rec.toLowerCase().includes('wait')) {
+    badgeClass = 'badge-green';
+  } else if (rec.toLowerCase().includes('not enough')) {
+    badgeClass = 'badge-sky';
+  }
+  return `<span class="badge ${badgeClass}" style="font-size: 0.85rem; padding: 4px 12px;">${rec}</span>`;
+}
+
 // Execute advisory calculation & load results
 async function executeAdvisory(container) {
   const resultsDiv = container.querySelector('#results-container');
   if (!resultsDiv) return;
 
-  // Show Loading Skeleton
-  resultsDiv.innerHTML = `
-    <div class="card" style="padding: 32px; text-align: center; margin-bottom: 24px;">
-      <div style="width: 56px; height: 56px; border-radius: 50%; border: 3px solid var(--border); border-top-color: var(--primary-dark); animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
-      <h3 style="font-size: 1.15rem; margin-bottom: 8px;" data-i18n="loading_calculating">
-        ${t('loading_calculating')}
-      </h3>
-      <p style="color: var(--muted); font-size: 0.9rem;">
-        Computing Haversine road transit, 12:00 PM cutoff, loading labor, and APMC modal spreads.
-      </p>
-    </div>
-    <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
-  `;
+  // Show Skeleton Loading State
+  renderLoadingSkeleton(resultsDiv);
 
   // Build Payload
   const overrides = {};
@@ -480,7 +607,7 @@ async function executeAdvisory(container) {
       state.forecastResult = forecast;
       state.storageResult = storage;
     } catch (_) {
-      // Forecast/storage errors gracefully tolerated
+      // Tolerated gracefully
     }
 
     // Render completed results
@@ -494,19 +621,7 @@ async function executeAdvisory(container) {
     }
   } catch (err) {
     console.error('Advisory execution failed:', err);
-    resultsDiv.innerHTML = `
-      <div class="card" style="padding: 24px; text-align: center; border: 1.5px solid var(--red-soft);">
-        <div class="badge badge-red" style="margin-bottom: 10px;">Calculation Error</div>
-        <h3>Unable to calculate advisory</h3>
-        <p style="color: var(--muted); margin: 8px 0 16px;">${err.message || 'Please check your connection and parameters.'}</p>
-        <button type="button" class="btn btn-primary" id="btn-retry-advise">
-          <i data-lucide="rotate-cw"></i> Try Again
-        </button>
-      </div>
-    `;
-    if (window.lucide) window.lucide.createIcons();
-    const btnRetry = resultsDiv.querySelector('#btn-retry-advise');
-    if (btnRetry) btnRetry.addEventListener('click', () => executeAdvisory(container));
+    renderErrorState(resultsDiv, err.message, container);
   }
 }
 
@@ -519,12 +634,7 @@ function renderResults(container) {
   const best = res.best_recommendation;
 
   if (!best) {
-    resultsDiv.innerHTML = `
-      <div class="card" style="text-align: center; padding: 32px;">
-        <h3>No active market trading found for ${state.selectedCrop}</h3>
-        <p style="color: var(--muted); margin-top: 8px;">Please select another crop or district.</p>
-      </div>
-    `;
+    renderEmptyState(resultsDiv, state.selectedCrop, state.selectedDistrict);
     return;
   }
 
@@ -533,54 +643,58 @@ function renderResults(container) {
     ? `+₹${best.gain_vs_nearest_per_quintal.toFixed(2)}/q extra`
     : `Local Nearest Market`;
 
+  // Combine top recommendation and comparison list for ranked cards
+  const allRanked = [best, ...(res.comparisons || [])];
+
   resultsDiv.innerHTML = `
-    <!-- Top Hero Recommendation Card -->
-    <div class="card" style="background: linear-gradient(145deg, #FFFFFF 0%, var(--bg) 100%); border: 2px solid var(--primary); padding: 28px; margin-bottom: 24px; box-shadow: var(--shadow-md);">
+    <!-- 1. Best Option Hero Card -->
+    <div class="card" style="background: linear-gradient(145deg, #FFFFFF 0%, var(--bg) 100%); border: 2.5px solid var(--primary-dark); padding: 28px; margin-bottom: 24px; box-shadow: var(--shadow-md);">
       
       <!-- Card Header -->
       <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px;">
         <div>
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-            <span class="badge badge-green">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
+            <span class="badge badge-green" style="font-size: 0.85rem; padding: 4px 14px;">
               <i data-lucide="award" style="width: 14px; height: 14px;"></i>
               <span data-i18n="results_hero_title">${t('results_hero_title')}</span>
             </span>
             <span class="badge ${best.confidence === 'HIGH' ? 'badge-green' : best.confidence === 'MEDIUM' ? 'badge-sky' : 'badge-yellow'}">
               ${best.confidence} Confidence
             </span>
+            ${getFreshnessBadge(best.days_ago, best.arrival_date)}
             ${best.missed_cutoff ? `<span class="badge badge-peach">Auction Day+1</span>` : `<span class="badge badge-green">Today's Auction</span>`}
           </div>
-          <h2 style="font-size: 2rem; font-weight: 700; color: var(--text); margin: 4px 0;">
-            ${best.market} <span style="font-size: 1.1rem; font-weight: 500; color: var(--muted);">(${best.district})</span>
+          <h2 style="font-size: 2.2rem; font-weight: 700; color: var(--text); margin: 4px 0;">
+            ${best.market} <span style="font-size: 1.15rem; font-weight: 500; color: var(--muted);">(${best.district} District)</span>
           </h2>
         </div>
 
         <!-- Voice Audio Button -->
-        <button type="button" class="btn btn-ghost" id="btn-voice-listen" style="border-radius: var(--radius-pill); border-color: var(--primary); color: var(--primary-dark); font-weight: 600;">
+        <button type="button" class="btn btn-ghost" id="btn-voice-listen" style="border-radius: var(--radius-pill); border: 1.5px solid var(--primary-dark); color: var(--primary-dark); font-weight: 600; padding: 10px 18px;">
           <i data-lucide="volume-2"></i>
           <span id="voice-btn-text" data-i18n="btn_listen">${t('btn_listen')}</span>
         </button>
       </div>
 
-      <!-- Financial Highlight Numbers -->
+      <!-- Financial Numbers Highlight -->
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0; padding: 20px; background: #FFFFFF; border-radius: var(--radius-md); border: 1px solid var(--border);">
         <div>
           <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 4px;" data-i18n="results_net_return">${t('results_net_return')}</div>
-          <div style="font-size: 2rem; font-weight: 700; color: #2E7D32;">
+          <div style="font-size: 2.1rem; font-weight: 700; color: #2E7D32;">
             ₹${best.net_return_per_quintal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             <span style="font-size: 0.9rem; font-weight: 500; color: var(--muted);">/quintal</span>
           </div>
-          <div style="font-size: 0.8rem; font-weight: 600; color: ${best.gain_vs_nearest_per_quintal > 0 ? '#2E7D32' : 'var(--muted)'}; margin-top: 4px;">
+          <div style="font-size: 0.85rem; font-weight: 600; color: ${best.gain_vs_nearest_per_quintal > 0 ? '#2E7D32' : 'var(--muted)'}; margin-top: 4px;">
             ${gainText}
           </div>
         </div>
 
         <div>
           <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 4px;" data-i18n="results_total_earnings">${t('results_total_earnings')}</div>
-          <div style="font-size: 2rem; font-weight: 700; color: var(--text);">
+          <div style="font-size: 2.1rem; font-weight: 700; color: var(--text);">
             ₹${best.total_net_earnings.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </div>
-          <div style="font-size: 0.8rem; color: var(--muted); margin-top: 4px;">
+          <div style="font-size: 0.85rem; color: var(--muted); margin-top: 4px;">
             For your ${state.quantity} quintals batch
           </div>
         </div>
@@ -593,15 +707,15 @@ function renderResults(container) {
         </p>
       </div>
 
-      <!-- Cost Breakdown Grid -->
+      <!-- Cost Breakdown Tags -->
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; font-size: 0.85rem;">
         <div style="background: #FFFFFF; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
           <div style="color: var(--muted);" data-i18n="results_gross_price">${t('results_gross_price')}</div>
-          <div style="font-weight: 600; font-size: 1rem;">₹${best.gross_modal_price}</div>
+          <div style="font-weight: 600; font-size: 1rem;">₹${best.gross_modal_price.toFixed(2)}</div>
         </div>
         <div style="background: #FFFFFF; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-          <div style="color: var(--muted);">Freight / q</div>
-          <div style="font-weight: 600; font-size: 1rem; color: #C62828;">-₹${best.costs.transport_per_q}</div>
+          <div style="color: var(--muted);">Transport / q</div>
+          <div style="font-weight: 600; font-size: 1rem; color: #C62828;">-₹${best.costs.transport_per_q.toFixed(2)}</div>
         </div>
         <div style="background: #FFFFFF; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
           <div style="color: var(--muted);">Labor & Fee / q</div>
@@ -619,7 +733,7 @@ function renderResults(container) {
 
     </div>
 
-    <!-- Break-Even Price Advice Box -->
+    <!-- 2. Break-Even Price Threshold Note -->
     ${best.break_even_price && !best.is_nearest ? `
       <div class="card" style="border-left: 5px solid #0277BD; background: var(--sky); padding: 18px 24px; margin-bottom: 24px;">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
@@ -628,24 +742,37 @@ function renderResults(container) {
             ${t('results_breakeven_title')}
           </h4>
         </div>
-        <p style="font-size: 0.9rem; color: var(--text); margin: 0;">
+        <p style="font-size: 0.95rem; color: var(--text); margin: 0;">
           Traveling to <strong>${best.market}</strong> pays off only if the market price exceeds 
           <strong>₹${best.break_even_price}/q</strong>. Any price below this makes selling at your local 
-          <strong>${res.nearest_baseline}</strong> market more profitable after fuel costs.
+          <strong>${res.nearest_baseline}</strong> market more profitable after transport costs.
         </p>
       </div>
-    ` : ''}
+    ` : `
+      <div class="card" style="border-left: 5px solid #2E7D32; background: #E8F5E9; padding: 16px 20px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+          <i data-lucide="check-circle" style="color: #2E7D32; width: 18px; height: 18px;"></i>
+          <h4 style="font-size: 0.95rem; font-weight: 600; color: #2E7D32; margin: 0;">Local Market Optimal</h4>
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text); margin: 0;">
+          Selling at your nearest APMC (<strong>${best.market}</strong>) eliminates distant freight costs. Regional premiums elsewhere do not justify traveling.
+        </p>
+      </div>
+    `}
 
-    <!-- 5-Day Price Forecast Corridor -->
+    <!-- 3. Chart.js 5-Day Low/Likely/High Outlook Chart with Verdict Chip -->
     ${state.forecastResult && state.forecastResult.forecast && state.forecastResult.forecast.length > 0 ? `
       <div class="card" style="padding: 24px; margin-bottom: 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px;">
           <div>
-            <h3 style="font-size: 1.15rem; font-weight: 600; margin: 0;" data-i18n="results_forecast_title">
-              ${t('results_forecast_title')}
-            </h3>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h3 style="font-size: 1.15rem; font-weight: 600; margin: 0;" data-i18n="results_forecast_title">
+                ${t('results_forecast_title')}
+              </h3>
+              ${getStorageVerdictChip(state.storageResult)}
+            </div>
             <p style="color: var(--muted); font-size: 0.85rem; margin-top: 2px;">
-              5-Day low ≤ likely ≤ high corridor for ${state.selectedCrop} in ${best.market}
+              5-Day rolling price corridor for ${state.selectedCrop} in ${best.market} (Low ≤ Likely ≤ High)
             </p>
           </div>
           <span class="badge ${state.forecastResult.trend === 'BULLISH' ? 'badge-green' : state.forecastResult.trend === 'BEARISH' ? 'badge-red' : 'badge-sky'}">
@@ -653,91 +780,110 @@ function renderResults(container) {
           </span>
         </div>
 
-        <!-- Corridor Table -->
-        <div style="overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-            <thead>
-              <tr style="border-bottom: 1px solid var(--border); color: var(--muted); font-size: 0.8rem;">
-                <th style="padding: 8px;">Day</th>
-                <th style="padding: 8px;">Date</th>
-                <th style="padding: 8px; text-align: right;">Low Bound</th>
-                <th style="padding: 8px; text-align: right; color: var(--primary-dark); font-weight: 600;">Likely Price</th>
-                <th style="padding: 8px; text-align: right;">High Bound</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${state.forecastResult.forecast.map(f => `
-                <tr style="border-bottom: 1px solid #F0F6F2;">
-                  <td style="padding: 10px 8px; font-weight: 500;">${f.day} (${f.weekday})</td>
-                  <td style="padding: 10px 8px; color: var(--muted);">${f.date}</td>
-                  <td style="padding: 10px 8px; text-align: right; color: #C62828;">₹${f.low.toFixed(2)}</td>
-                  <td style="padding: 10px 8px; text-align: right; font-weight: 700; color: #2E7D32;">₹${f.likely.toFixed(2)}</td>
-                  <td style="padding: 10px 8px; text-align: right; color: #0277BD;">₹${f.high.toFixed(2)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+        <!-- Chart.js Canvas -->
+        <div style="position: relative; height: 260px; width: 100%; margin-bottom: 14px;">
+          <canvas id="forecast-chart"></canvas>
         </div>
+
+        <!-- Sell or Store Decision Note -->
+        ${state.storageResult ? `
+          <div style="background: #F8FAF8; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.9rem;">
+            <div style="font-weight: 600; color: var(--text); margin-bottom: 2px;" data-i18n="results_storage_title">${t('results_storage_title')}</div>
+            <p style="color: var(--muted); margin: 0;">
+              ${state.storageResult.rationale}
+            </p>
+          </div>
+        ` : ''}
+
       </div>
     ` : ''}
 
-    <!-- Sell or Store Decision Card -->
-    ${state.storageResult ? `
-      <div class="card" style="padding: 24px; margin-bottom: 24px; border-left: 5px solid ${state.storageResult.recommendation === 'Sell now' ? '#FFB74D' : '#81C784'};">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h3 style="font-size: 1.1rem; font-weight: 600; margin: 0;" data-i18n="results_storage_title">
-            ${t('results_storage_title')}
-          </h3>
-          <span class="badge ${state.storageResult.recommendation === 'Sell now' ? 'badge-yellow' : 'badge-green'}" style="font-size: 0.9rem; padding: 6px 14px;">
-            ${state.storageResult.recommendation}
-          </span>
-        </div>
-        <p style="font-size: 0.95rem; color: var(--text); margin: 0;">
-          ${state.storageResult.rationale}
-        </p>
-      </div>
-    ` : ''}
+    <!-- 4. Ranked Mandi Cards with Min/Modal/Max Bars -->
+    <div style="margin-bottom: 24px;">
+      <h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 16px;" data-i18n="results_comparisons_title">
+        ${t('results_comparisons_title')}
+      </h3>
 
-    <!-- Ranked Mandi Comparison Table -->
-    ${res.comparisons && res.comparisons.length > 0 ? `
-      <div class="card" style="padding: 24px; margin-bottom: 24px;">
-        <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 16px;" data-i18n="results_comparisons_title">
-          ${t('results_comparisons_title')}
-        </h3>
-        <div style="overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-            <thead>
-              <tr style="border-bottom: 2px solid var(--border); color: var(--muted); font-size: 0.8rem;">
-                <th style="padding: 10px 8px;" data-i18n="table_mandi">${t('table_mandi')}</th>
-                <th style="padding: 10px 8px;">Distance</th>
-                <th style="padding: 10px 8px; text-align: right;" data-i18n="table_modal">${t('table_modal')}</th>
-                <th style="padding: 10px 8px; text-align: right;" data-i18n="table_deductions">${t('table_deductions')}</th>
-                <th style="padding: 10px 8px; text-align: right; font-weight: 600;" data-i18n="table_net">${t('table_net')}</th>
-                <th style="padding: 10px 8px;" data-i18n="table_verdict">${t('table_verdict')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${res.comparisons.slice(0, 7).map(m => `
-                <tr style="border-bottom: 1px solid #F0F6F2;">
-                  <td style="padding: 12px 8px;">
-                    <div style="font-weight: 600;">${m.market}</div>
-                    <div style="font-size: 0.75rem; color: var(--muted);">${m.district}</div>
-                  </td>
-                  <td style="padding: 12px 8px; color: var(--muted);">${m.distance_km} km</td>
-                  <td style="padding: 12px 8px; text-align: right;">₹${m.gross_modal_price}</td>
-                  <td style="padding: 12px 8px; text-align: right; color: #C62828;">-₹${m.costs.total_deductions_per_q}</td>
-                  <td style="padding: 12px 8px; text-align: right; font-weight: 700; color: #2E7D32;">₹${m.net_return_per_quintal}</td>
-                  <td style="padding: 12px 8px; font-size: 0.8rem; color: var(--muted); max-width: 240px;">
-                    ${m.verdict_reason}
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        ${allRanked.slice(0, 8).map((m, idx) => {
+          const isTop = idx === 0;
+          return `
+            <div class="ranked-mandi-card ${isTop ? 'is-best' : ''}">
+              
+              <!-- Card Top Row: Rank, Market, Distance, Badges -->
+              <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span class="badge ${isTop ? 'badge-green' : 'badge-sky'}" style="font-weight: 700;">
+                    #${idx + 1} ${isTop ? 'Best Net' : ''}
+                  </span>
+                  <div>
+                    <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text); margin: 0;">
+                      ${m.market}
+                      <span style="font-size: 0.85rem; font-weight: 400; color: var(--muted);">(${m.district})</span>
+                    </h4>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  ${getFreshnessBadge(m.days_ago, m.arrival_date)}
+                  <span class="badge badge-sky">${m.distance_km} km</span>
+                  <span class="badge badge-sky">${m.travel_hours} hrs</span>
+                </div>
+              </div>
+
+              <!-- Min / Modal / Max Graphical Price Bar -->
+              ${renderPriceBar(
+                m.price_range ? m.price_range.min : m.gross_modal_price * 0.9,
+                m.gross_modal_price,
+                m.price_range ? m.price_range.max : m.gross_modal_price * 1.1
+              )}
+
+              <!-- Bottom Metrics Grid -->
+              <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border);">
+                <div style="display: flex; gap: 16px; font-size: 0.85rem; color: var(--muted);">
+                  <span>Freight: <strong style="color: #C62828;">-₹${m.costs.transport_per_q.toFixed(2)}/q</strong></span>
+                  <span>Fees & Labor: <strong style="color: #C62828;">-₹${(m.costs.loading_unloading_per_q + m.costs.market_fee_per_q).toFixed(2)}/q</strong></span>
+                  <span>Arrival: <strong>${m.arrival_time}</strong></span>
+                </div>
+
+                <div style="text-align: right;">
+                  <span style="font-size: 0.8rem; color: var(--muted); margin-right: 6px;">Net In Pocket:</span>
+                  <span style="font-size: 1.35rem; font-weight: 700; color: #2E7D32;">
+                    ₹${m.net_return_per_quintal.toFixed(2)}<span style="font-size: 0.85rem; font-weight: 500; color: var(--muted);">/q</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Rationale verdict -->
+              <div style="font-size: 0.85rem; color: var(--muted); margin-top: 8px;">
+                ${m.verdict_reason}
+              </div>
+
+            </div>
+          `;
+        }).join('')}
       </div>
-    ` : ''}
+    </div>
+
+    <!-- 5. Disclaimer Notice Banner -->
+    <div class="card" style="background: #FAFAFA; border: 1px solid var(--border); padding: 18px 24px; margin-bottom: 24px; border-radius: var(--radius-md);">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+        <i data-lucide="info" style="color: #8D6E12; width: 18px; height: 18px;"></i>
+        <h4 style="font-size: 0.95rem; font-weight: 600; color: #8D6E12; margin: 0;" data-i18n="disclaimer_title">
+          ${t('disclaimer_title')}
+        </h4>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--muted); margin: 0; line-height: 1.5;" data-i18n="disclaimer_text">
+        ${t('disclaimer_text')}
+      </p>
+    </div>
+
   `;
+
+  // Initialize Chart.js interactive forecast chart
+  if (state.forecastResult && state.forecastResult.forecast) {
+    renderForecastChart(state.forecastResult.forecast);
+  }
 
   // Bind Listen to Advice Voice Synthesis button
   const btnVoice = resultsDiv.querySelector('#btn-voice-listen');
@@ -745,9 +891,107 @@ function renderResults(container) {
     btnVoice.addEventListener('click', () => speakAdvice(best, res.nearest_baseline));
   }
 
+  // Refresh Lucide icons
   if (window.lucide) {
     window.lucide.createIcons();
   }
+}
+
+// Chart.js 5-day Low / Likely / High Price Outlook Corridor chart
+function renderForecastChart(forecastData) {
+  const canvas = document.getElementById('forecast-chart');
+  if (!canvas || !window.Chart) return;
+
+  if (state.chartInstance) {
+    state.chartInstance.destroy();
+    state.chartInstance = null;
+  }
+
+  const labels = forecastData.map(f => `${f.day} (${f.weekday.slice(0, 3)})`);
+  const lows = forecastData.map(f => f.low);
+  const likelys = forecastData.map(f => f.likely);
+  const highs = forecastData.map(f => f.high);
+
+  const ctx = canvas.getContext('2d');
+  state.chartInstance = new window.Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: t('chart_high'),
+          data: highs,
+          borderColor: 'rgba(2, 119, 189, 0.8)',
+          backgroundColor: 'rgba(227, 241, 251, 0.45)',
+          fill: '+1',
+          borderDash: [5, 5],
+          pointRadius: 4,
+          tension: 0.25
+        },
+        {
+          label: t('chart_likely'),
+          data: likelys,
+          borderColor: '#2E7D32',
+          backgroundColor: '#2E7D32',
+          borderWidth: 3,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+          pointBackgroundColor: '#2E7D32',
+          tension: 0.25
+        },
+        {
+          label: t('chart_low'),
+          data: lows,
+          borderColor: 'rgba(198, 40, 40, 0.8)',
+          borderDash: [5, 5],
+          pointRadius: 4,
+          fill: false,
+          tension: 0.25
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            boxWidth: 14,
+            font: { family: 'Poppins', size: 12 }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `${context.dataset.label}: ₹${context.parsed.y.toLocaleString('en-IN')}/q`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          ticks: {
+            callback: function(val) {
+              return '₹' + val;
+            },
+            font: { family: 'Poppins', size: 11 }
+          },
+          grid: {
+            color: 'rgba(225, 239, 228, 0.6)'
+          }
+        },
+        x: {
+          ticks: {
+            font: { family: 'Poppins', size: 11 }
+          },
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
 }
 
 // Spoken voice advice synthesis in Marathi, Hindi, or English

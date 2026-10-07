@@ -325,3 +325,69 @@
     transform: translateY(0);
   }
 }
+
+/* Price Range Min-Modal-Max Bar */
+.price-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px 0;
+}
+
+.price-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.price-range-track {
+  position: relative;
+  height: 8px;
+  background: #E8EFEA;
+  border-radius: var(--radius-pill);
+  overflow: visible;
+}
+
+.price-range-span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #C8E6C9 0%, #81C784 100%);
+  border-radius: var(--radius-pill);
+}
+
+.price-range-dot {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #2E7D32;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  z-index: 2;
+}
+
+/* Ranked Mandi Card */
+.ranked-mandi-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.ranked-mandi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+}
+
+.ranked-mandi-card.is-best {
+  border: 2px solid var(--primary);
+  background: linear-gradient(180deg, #FFFFFF 0%, #F9FCFA 100%);
+}
+

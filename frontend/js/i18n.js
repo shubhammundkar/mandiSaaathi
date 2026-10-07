@@ -88,6 +88,18 @@ export const translations = {
     table_net: "Net In Pocket",
     table_verdict: "Verdict",
 
+    // Disclaimer & States
+    disclaimer_title: "Estimates, not guarantees",
+    disclaimer_text: "APMC auction prices fluctuate daily based on morning arrivals, lot quality, and local moisture grade. Freight and APMC deductions are mathematical model estimates based on standard vehicle and market rates.",
+    freshness_fresh: "Fresh (0–1d)",
+    freshness_moderate: "Moderate (2–3d)",
+    freshness_stale: "Stale (>3d)",
+    chart_low: "Low Bound",
+    chart_likely: "Likely Price",
+    chart_high: "High Bound",
+    empty_title: "No Trading Records Found",
+    empty_text: "No APMC markets reported transactions for this crop in the selected district recently. Please try another crop or nearby district.",
+
     // Footer
     footer_credit: "Data source: Agmarknet (agmarknet.gov.in) via data.gov.in",
     footer_hackathon: "VORTEX 2K26 • Climate, Agriculture & Rural Innovation"
@@ -177,6 +189,18 @@ export const translations = {
     table_net: "शुद्ध मुनाफा",
     table_verdict: "फैसला",
 
+    // Disclaimer & States
+    disclaimer_title: "अनुमान, गारंटी नहीं",
+    disclaimer_text: "मंडी में भाव दैनिक आवक, माल की गुणवत्ता और नमी के अनुसार बदलते हैं। परिवहन और मंडी शुल्क मानक दरों पर आधारित गणितीय अनुमान हैं।",
+    freshness_fresh: "ताज़ा भाव (0-1 दिन)",
+    freshness_moderate: "मध्यम (2-3 दिन)",
+    freshness_stale: "पुराना (>3 दिन)",
+    chart_low: "न्यूनतम सीमा",
+    chart_likely: "संभाव्य भाव",
+    chart_high: "अधिकतम सीमा",
+    empty_title: "कोई व्यापार रिकॉर्ड नहीं मिला",
+    empty_text: "चयनित ज़िले में इस फसल के लिए हाल ही में कोई मंडी भाव दर्ज नहीं हुआ है। कृपया अन्य फसल या नजदीकी ज़िला चुनें।",
+
     // Footer
     footer_credit: "डेटा स्रोत: Agmarknet (agmarknet.gov.in) via data.gov.in",
     footer_hackathon: "VORTEX 2K26 • जलवायु, कृषि एवं ग्रामीण नवाचार"
@@ -265,6 +289,18 @@ export const translations = {
     table_deductions: "वाहतूक व फी",
     table_net: "निव्वळ नफा",
     table_verdict: "निर्णय",
+
+    // Disclaimer & States
+    disclaimer_title: "अंदाज, हमी नाही",
+    disclaimer_text: "बाजार समितीमधील भाव दररोज मालाची आवक, प्रत आणि ओलावा यावर बदलतात. वाहतूक व बाजार फी ही प्रमाणित दरांवर आधारित गणितीय अंदाज आहेत.",
+    freshness_fresh: "ताजे भाव (0-1 दिवस)",
+    freshness_moderate: "मध्यम (2-3 दिवस)",
+    freshness_stale: "जुने (>3 दिवस)",
+    chart_low: "किमान मर्यादा",
+    chart_likely: "संभाव्य भाव",
+    chart_high: "कमाल मर्यादा",
+    empty_title: "कोणतेही व्यवहार उपलब्ध नाहीत",
+    empty_text: "निवडलेल्या जिल्ह्यात या पिकासाठी अलीकडे कोणतेही बाजारभाव नोंदवले गेले नाहीत. कृपया दुसरे पीक किंवा जवळचा जिल्हा निवडा.",
 
     // Footer
     footer_credit: "माहिती स्त्रोत: Agmarknet (agmarknet.gov.in) via data.gov.in",
