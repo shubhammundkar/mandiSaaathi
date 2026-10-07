@@ -63,7 +63,7 @@ def forecast_5_days(crop: str, market: str) -> Dict[str, Any]:
             "market": market,
             "status": "NOT_ENOUGH_DATA",
             "confidence": "LOW",
-            "message": f"Insufficient historical records for {crop} in {market} (need >= 7 days).",
+            "message": f"Not enough data: Insufficient historical records for {crop} in {market} (found {len(df)} days, need >= 7 days).",
             "forecast": []
         }
 

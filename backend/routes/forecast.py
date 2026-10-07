@@ -19,11 +19,7 @@ def get_price_forecast(
     """
     try:
         result = forecast_5_days(crop=crop, market=market)
-        if result.get("status") == "NOT_ENOUGH_DATA":
-            raise HTTPException(status_code=404, detail=result.get("message", "Not enough historical data"))
         return result
-    except HTTPException:
-        raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Forecast calculation failed: {str(exc)}")
 

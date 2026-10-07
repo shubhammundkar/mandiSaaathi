@@ -97,17 +97,35 @@ def test_api_forecast_and_storage_endpoints():
     """Verifies GET /api/forecast and GET /api/storage-advice endpoints."""
     client = TestClient(app)
 
-    # 1. GET /api/forecast
+    # 1. GET /api/forecast returns 5 days with low <= likely <= high and confidence label
     resp1 = client.get("/api/forecast?crop=Soybean&market=Latur")
     assert resp1.status_code == 200
     d1 = resp1.json()
     assert d1["status"] == "OK"
+    assert d1["confidence"] in ["HIGH", "MEDIUM", "LOW"]
     assert len(d1["forecast"]) == 5
+    for pt in d1["forecast"]:
+        assert pt["low"] <= pt["likely"] <= pt["high"]
+        assert pt["low"] < pt["high"]
 
-    # 2. GET /api/storage-advice
+    # 2. Thin/missing data endpoint check: returns low confidence / Not enough data, no made-up forecast
+    resp_thin = client.get("/api/forecast?crop=Dragonfruit&market=Pune")
+    assert resp_thin.status_code == 200
+    d_thin = resp_thin.json()
+    assert d_thin["status"] == "NOT_ENOUGH_DATA"
+    assert d_thin["confidence"] == "LOW"
+    assert len(d_thin["forecast"]) == 0  # No made-up numbers
+
+    # 3. GET /api/storage-advice
     resp2 = client.get("/api/storage-advice?crop=Onion&market=Lasalgaon")
     assert resp2.status_code == 200
     d2 = resp2.json()
     assert d2["crop"] == "Onion"
     assert d2["is_storage_viable"] is True
     assert "recommendation" in d2
+
+    # 4. Storage advice on thin data returns 'Not enough data'
+    resp_store_thin = client.get("/api/storage-advice?crop=Dragonfruit&market=Pune")
+    assert resp_store_thin.status_code == 200
+    d_store_thin = resp_store_thin.json()
+    assert d_store_thin["recommendation"] in ["Not enough data", "Sell now"]
