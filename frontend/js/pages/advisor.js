@@ -201,9 +201,10 @@ export async function render(container) {
     window.lucide.createIcons();
   }
 
-  // Load live data status & mandis list
+  // Load live data status, crops, & mandis list
   fetchDataStatus(container);
-  fetchMandis(container);
+  fetchCrops(container);
+  fetchMandis(container, state.selectedCrop);
 
   // If there's already an active advisory result in memory, render it
   if (state.advisoryResult) {
@@ -225,12 +226,10 @@ function bindEvents(container) {
         // Auto-select common default district for crop if available
         const cropMeta = CROPS.find(c => c.key === crop);
         if (cropMeta && cropMeta.defaultDistrict) {
-          const select = container.querySelector('#district-select');
-          if (select) {
-            select.value = cropMeta.defaultDistrict;
-            state.selectedDistrict = cropMeta.defaultDistrict;
-          }
+          state.selectedDistrict = cropMeta.defaultDistrict;
         }
+        // Dynamically reload districts for this crop from API
+        fetchMandis(container, crop);
       }
     });
   });
@@ -394,10 +393,10 @@ async function fetchDataStatus(container) {
   }
 }
 
-// Fetch mandis metadata for district list
-async function fetchMandis(container) {
+// Fetch mandis metadata for district list from /api/mandis?crop=...
+async function fetchMandis(container, crop = '') {
   try {
-    const res = await api.getMandis();
+    const res = await api.getMandis(crop);
     if (res && res.mandis && res.mandis.length > 0) {
       const uniqueDistricts = [...new Set(res.mandis.map(m => m.district).filter(Boolean))].sort();
       if (uniqueDistricts.length > 0) {
@@ -405,14 +404,28 @@ async function fetchMandis(container) {
         const select = container.querySelector('#district-select');
         if (select) {
           const currentVal = select.value || state.selectedDistrict;
+          const matchVal = state.districts.find(d => d.toLowerCase() === currentVal.toLowerCase()) || state.districts[0];
+          state.selectedDistrict = matchVal;
           select.innerHTML = state.districts.map(d => `
-            <option value="${d}" ${d.toLowerCase() === currentVal.toLowerCase() ? 'selected' : ''}>${d} District</option>
+            <option value="${d}" ${d.toLowerCase() === matchVal.toLowerCase() ? 'selected' : ''}>${d} District</option>
           `).join('');
         }
       }
     }
   } catch (err) {
     console.warn('Mandis fetch error:', err);
+  }
+}
+
+// Fetch monitored crops metadata from /api/crops
+async function fetchCrops(container) {
+  try {
+    const res = await api.getCrops();
+    if (res && res.crops && res.crops.length > 0) {
+      console.log('Real crops loaded from /api/crops:', res.crops.length, 'commodities');
+    }
+  } catch (err) {
+    console.warn('Crops fetch error:', err);
   }
 }
 

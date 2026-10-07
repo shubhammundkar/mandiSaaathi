@@ -59,6 +59,15 @@ export const translations = {
     vehicle_truck: "Mini Truck",
     vehicle_own: "Own Vehicle",
 
+    // Crops
+    crop_tomato: "Tomato",
+    crop_onion: "Onion",
+    crop_soybean: "Soybean",
+    crop_tur: "Tur (Arhar)",
+    crop_cotton: "Cotton",
+    crop_potato: "Potato",
+    crop_wheat: "Wheat",
+
     // Results screen
     results_hero_title: "Top Recommended Mandi",
     results_net_return: "Net Return",
@@ -139,6 +148,15 @@ export const translations = {
     vehicle_truck: "छोटा ट्रक",
     vehicle_own: "स्वयं का वाहन",
 
+    // Crops
+    crop_tomato: "टमाटर",
+    crop_onion: "प्याज",
+    crop_soybean: "सोयाबीन",
+    crop_tur: "तुअर (अरहर)",
+    crop_cotton: "कपास",
+    crop_potato: "आलू",
+    crop_wheat: "गेहूं",
+
     // Results screen
     results_hero_title: "सर्वश्रेष्ठ अनुशंसित मंडी",
     results_net_return: "जेब में शुद्ध मुनाफा",
@@ -218,6 +236,15 @@ export const translations = {
     vehicle_tempo: "टॅम्पो (पिकअप)",
     vehicle_truck: "छोटा ट्रक",
     vehicle_own: "स्वतःचे वाहन",
+
+    // Crops
+    crop_tomato: "टोमॅटो",
+    crop_onion: "कांदा",
+    crop_soybean: "सोयाबीन",
+    crop_tur: "तूर",
+    crop_cotton: "कापूस",
+    crop_potato: "बटाटा",
+    crop_wheat: "गहू",
 
     // Results screen
     results_hero_title: "सर्वात फायदेशीर बाजार",
