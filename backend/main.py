@@ -39,10 +39,12 @@ def health_check():
 
 from backend.routes.crops import router as crops_router
 from backend.routes.advisor import router as advisor_router
+from backend.routes.forecast import router as forecast_router
 
 # Include API Routers
 app.include_router(crops_router)
 app.include_router(advisor_router)
+app.include_router(forecast_router)
 
 # Mount static files for frontend at root
 FRONTEND_DIR.mkdir(parents=True, exist_ok=True)

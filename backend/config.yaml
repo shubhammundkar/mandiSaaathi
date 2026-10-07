@@ -35,3 +35,22 @@ spoilage_per_day:
 operational:
   auction_cutoff: "12:00"
   cautious_forecast_haircut: 0.04
+
+storage:
+  daily_cost_per_quintal:
+    Onion: 0.50
+    Soybean: 0.30
+    Soyabean: 0.30
+    Tur: 0.30
+    Red gram/Arhar/Tur(whole): 0.30
+    Potato: 0.80
+    Wheat: 0.30
+  daily_quality_loss_rate:
+    Onion: 0.0025
+    Soybean: 0.0004
+    Soyabean: 0.0004
+    Tur: 0.0004
+    Red gram/Arhar/Tur(whole): 0.0004
+    Potato: 0.0010
+    Wheat: 0.0004
+  min_gain_threshold_per_quintal: 25.0

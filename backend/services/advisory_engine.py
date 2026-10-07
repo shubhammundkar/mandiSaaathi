@@ -139,11 +139,22 @@ def compute_mandi_metrics(
     holding_cost = overnight_rate if missed_cutoff else 0.0
     effective_spoilage_hours = travel_hours + (16.0 if missed_cutoff else 0.0)
 
-    # Price & far-mandi lower bound haircut
+    # Price & far-mandi lower bound rule (wired to forecast engine)
     gross_price = float(candidate.get("modal_price", candidate.get("price", 0.0)))
     is_far = distance_km > 60.0
     haircut = config.get("operational", {}).get("cautious_forecast_haircut", 0.04) if is_far else 0.0
-    expected_price = round(gross_price * (1.0 - haircut), 2)
+    
+    expected_price = gross_price
+    if is_far or missed_cutoff:
+        try:
+            from backend.services.forecast_engine import get_forecast_lower_bound
+            fc_low = get_forecast_lower_bound(crop, candidate.get("market", ""), day_offset=1)
+            if fc_low is not None and fc_low > 0:
+                expected_price = round(min(gross_price, fc_low), 2)
+            else:
+                expected_price = round(gross_price * (1.0 - haircut), 2)
+        except Exception:
+            expected_price = round(gross_price * (1.0 - haircut), 2)
 
     # Deductions per quintal
     batch_qty = max(0.1, quantity_quintals)
