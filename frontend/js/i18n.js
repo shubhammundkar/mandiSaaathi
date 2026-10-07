@@ -17,8 +17,10 @@ export const translations = {
     nav_design: "Design System",
 
     // Common Buttons
-    btn_calculate: "Find Best Mandi",
-    btn_listen: "Listen (Voice)",
+    btn_calculate: "Find Best Place to Sell",
+    btn_try_demo: "⚡ Try Demo (Tomato • Pune • 20q)",
+    btn_listen: "Listen to Advice",
+    btn_speaking: "Speaking...",
     btn_speak: "Tap & Speak",
     btn_stop_speaking: "Listening...",
     btn_sell_now: "Sell Now",
@@ -34,14 +36,48 @@ export const translations = {
     badge_high_conf: "High Confidence",
     badge_med_conf: "Medium Confidence",
     badge_low_conf: "Low Confidence",
+    data_source_live: "Live Agmarknet",
+    data_source_snapshot: "90-Day Verified Snapshot",
+    data_source_sample: "Sample Fallback",
 
-    // Advisor placeholders
+    // Advisor placeholders & form
     advisor_heading: "Smart Crop Sell Advisor",
-    advisor_subheading: "Find out where and when to sell for the maximum net profit in your pocket.",
+    advisor_subheading: "Find out where and when to sell for the maximum net profit in your pocket after transport, market fee, and spoilage.",
     select_crop: "Select Crop",
     select_district: "Your Location (District)",
     input_quantity: "Harvest Quantity (Quintals)",
     select_vehicle: "Transport Vehicle",
+    advanced_title: "Advanced Cost Settings (Optional)",
+    label_rate_km: "Transport Rate (₹/km)",
+    label_fee_pct: "APMC Market Fee (%)",
+    label_spoil_rate: "Transit Spoilage (%/day)",
+    label_loading_rate: "Loading Labor (₹/q)",
+    loading_calculating: "Analyzing APMC prices & freight costs...",
+
+    // Vehicles
+    vehicle_tempo: "Tempo (Pickup)",
+    vehicle_truck: "Mini Truck",
+    vehicle_own: "Own Vehicle",
+
+    // Results screen
+    results_hero_title: "Top Recommended Mandi",
+    results_net_return: "Net Return",
+    results_total_earnings: "Total Net Earnings",
+    results_gross_price: "Gross Modal Price",
+    results_total_deductions: "Total Deductions",
+    results_gain_vs_nearest: "Extra Net vs Nearest",
+    results_distance: "Distance",
+    results_travel_time: "Travel Time",
+    results_arrival: "Auction Arrival",
+    results_breakeven_title: "Break-Even Price Threshold",
+    results_forecast_title: "5-Day Price Outlook Corridor",
+    results_storage_title: "Sell or Store Decision",
+    results_comparisons_title: "Ranked Mandi Comparison",
+    table_mandi: "Mandi / Market",
+    table_modal: "Gross Price",
+    table_deductions: "Freight & Fees",
+    table_net: "Net In Pocket",
+    table_verdict: "Verdict",
 
     // Footer
     footer_credit: "Data source: Agmarknet (agmarknet.gov.in) via data.gov.in",
@@ -61,8 +97,10 @@ export const translations = {
     nav_design: "डिज़ाइन सिस्टम",
 
     // Common Buttons
-    btn_calculate: "सर्वोत्तम मंडी खोजें",
-    btn_listen: "सुनें (आवाज़)",
+    btn_calculate: "सर्वोत्तम बिक्री मंडी खोजें",
+    btn_try_demo: "⚡ डेमो आज़माएं (टमाटर • पुणे • 20 क्विंटल)",
+    btn_listen: "सलाह सुनें",
+    btn_speaking: "बोल रहे हैं...",
     btn_speak: "बोलकर पूछें",
     btn_stop_speaking: "सुन रहे हैं...",
     btn_sell_now: "अभी बेचें",
@@ -78,14 +116,48 @@ export const translations = {
     badge_high_conf: "उच्च विश्वसनीयता",
     badge_med_conf: "मध्यम विश्वसनीयता",
     badge_low_conf: "कम विश्वसनीयता",
+    data_source_live: "लाइव अगमार्कनेट",
+    data_source_snapshot: "90-दिन सत्यापित स्नैपशॉट",
+    data_source_sample: "नमूना डेटा",
 
-    // Advisor placeholders
+    // Advisor placeholders & form
     advisor_heading: "स्मार्ट फसल बिक्री सलाहकार",
-    advisor_subheading: "जानिए कहाँ और कब बेचने पर आपकी जेब में सबसे ज्यादा शुद्ध मुनाफा बचेगा।",
+    advisor_subheading: "परिवहन, मंडी शुल्क और खराबी खर्च घटाने के बाद अपनी जेब में अधिकतम शुद्ध मुनाफा पाने के लिए सही मंडी चुनें।",
     select_crop: "फसल चुनें",
     select_district: "आपका ज़िला",
     input_quantity: "फसल की मात्रा (क्विंटल)",
     select_vehicle: "परिवहन वाहन",
+    advanced_title: "उन्नत लागत सेटिंग्स (वैकल्पिक)",
+    label_rate_km: "परिवहन दर (₹/किमी)",
+    label_fee_pct: "मंडी शुल्क (%)",
+    label_spoil_rate: "खराबी नुकसान (%/दिन)",
+    label_loading_rate: "हमाली व भराई (₹/क्विंटल)",
+    loading_calculating: "मंडी भाव एवं परिवहन खर्च का विश्लेषण जारी है...",
+
+    // Vehicles
+    vehicle_tempo: "टेंपो (पिकअप)",
+    vehicle_truck: "छोटा ट्रक",
+    vehicle_own: "स्वयं का वाहन",
+
+    // Results screen
+    results_hero_title: "सर्वश्रेष्ठ अनुशंसित मंडी",
+    results_net_return: "जेब में शुद्ध मुनाफा",
+    results_total_earnings: "कुल शुद्ध कमाई",
+    results_gross_price: "मंडी का थोक भाव",
+    results_total_deductions: "कुल खर्च (कटौती)",
+    results_gain_vs_nearest: "निकटतम मंडी से अतिरिक्त लाभ",
+    results_distance: "दूरी",
+    results_travel_time: "यात्रा का समय",
+    results_arrival: "मंडी आगमन",
+    results_breakeven_title: "समान लाभ सीमा (ब्रेक-इवन भाव)",
+    results_forecast_title: "अगले 5 दिनों का भाव गलियारा",
+    results_storage_title: "रोकें या अभी बेचें",
+    results_comparisons_title: "अन्य मंडियों की तुलना",
+    table_mandi: "मंडी / बाज़ार",
+    table_modal: "थोक भाव",
+    table_deductions: "किराया व खर्च",
+    table_net: "शुद्ध मुनाफा",
+    table_verdict: "फैसला",
 
     // Footer
     footer_credit: "डेटा स्रोत: Agmarknet (agmarknet.gov.in) via data.gov.in",
@@ -105,8 +177,10 @@ export const translations = {
     nav_design: "डिझाइन सिस्टीम",
 
     // Common Buttons
-    btn_calculate: "उत्तम बाजार शोधा",
-    btn_listen: "ऐका (आवाज)",
+    btn_calculate: "विक्रीसाठी उत्तम बाजार शोधा",
+    btn_try_demo: "⚡ डेमो बघा (टोमॅटो • पुणे • 20 क्विंटल)",
+    btn_listen: "सल्ला ऐका",
+    btn_speaking: "बोलत आहे...",
     btn_speak: "बोलून सांगा",
     btn_stop_speaking: "ऐकत आहे...",
     btn_sell_now: "आता विका",
@@ -122,14 +196,48 @@ export const translations = {
     badge_high_conf: "उच्च विश्वासार्हता",
     badge_med_conf: "मध्यम विश्वासार्हता",
     badge_low_conf: "कमी विश्वासार्हता",
+    data_source_live: "थेट ॲगमार्कनेट",
+    data_source_snapshot: "90-दिवसीय पडताळलेला डेटा",
+    data_source_sample: "नमुना डेटा",
 
-    // Advisor placeholders
+    // Advisor placeholders & form
     advisor_heading: "स्मार्ट पीक विक्री सल्लागार",
-    advisor_subheading: "तुमच्या खिशात सर्वाधिक निव्वळ नफा राहण्यासाठी कुठे आणि कधी विकायचे ते जाणून घ्या.",
+    advisor_subheading: "वाहतूक खर्च, बाजार समिती फी आणि नासाडी वजा जाता तुमच्या खिशात सर्वाधिक निव्वळ नफा राहण्यासाठी योग्य बाजार निवडा.",
     select_crop: "पीक निवडा",
     select_district: "तुमचा जिल्हा",
     input_quantity: "मालाचे वजन (क्विंटल)",
     select_vehicle: "वाहतूक साधन",
+    advanced_title: "प्रगत खर्च सेटिंग्ज (ऐच्छिक)",
+    label_rate_km: "वाहतूक दर (₹/किमी)",
+    label_fee_pct: "बाजार समिती फी (%)",
+    label_spoil_rate: "नासाडी प्रमाण (%/दिवस)",
+    label_loading_rate: "हमाली व तोलाई (₹/क्विंटल)",
+    loading_calculating: "बाजारभाव आणि वाहतूक खर्चाचे विश्लेषण करत आहे...",
+
+    // Vehicles
+    vehicle_tempo: "टॅम्पो (पिकअप)",
+    vehicle_truck: "छोटा ट्रक",
+    vehicle_own: "स्वतःचे वाहन",
+
+    // Results screen
+    results_hero_title: "सर्वात फायदेशीर बाजार",
+    results_net_return: "खिशात पडणारा निव्वळ नफा",
+    results_total_earnings: "एकूण निव्वळ कमाई",
+    results_gross_price: "बाजारातील मूळ भाव",
+    results_total_deductions: "एकूण खर्च (वजावट)",
+    results_gain_vs_nearest: "जवळच्या बाजारापेक्षा जास्तीचा नफा",
+    results_distance: "अंतर",
+    results_travel_time: "प्रवासाची वेळ",
+    results_arrival: "बाजारात पोहोचण्याची वेळ",
+    results_breakeven_title: "तोटा-नफा समतोल किंमत (ब्रेक-इव्हन)",
+    results_forecast_title: "पुढील 5 दिवसांचा संभाव्य भाव",
+    results_storage_title: "साठवणूक करावी का?",
+    results_comparisons_title: "इतर बाजारांची तुलना",
+    table_mandi: "बाजार समिती",
+    table_modal: "मूळ भाव",
+    table_deductions: "वाहतूक व फी",
+    table_net: "निव्वळ नफा",
+    table_verdict: "निर्णय",
 
     // Footer
     footer_credit: "माहिती स्त्रोत: Agmarknet (agmarknet.gov.in) via data.gov.in",
@@ -160,7 +268,6 @@ export function t(key) {
 
 export function translatePage() {
   const lang = getLanguage();
-  // Update all elements with data-i18n attribute
   document.querySelectorAll('[data-i18n]').forEach((el) => {
     const key = el.getAttribute('data-i18n');
     if (key && translations[lang]?.[key]) {
@@ -168,7 +275,6 @@ export function translatePage() {
     }
   });
 
-  // Update active state of language switcher buttons
   document.querySelectorAll('.lang-btn').forEach((btn) => {
     if (btn.getAttribute('data-lang') === lang) {
       btn.classList.add('active');
