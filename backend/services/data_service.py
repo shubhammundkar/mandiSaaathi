@@ -101,7 +101,9 @@ from backend.services.agmarknet_fetcher import get_canonical_commodity_name
 
 
 def get_mandis(crop: Optional[str] = None) -> List[Dict[str, Any]]:
-    """Returns metadata for all mandis, optionally filtered by commodity."""
+    """Returns metadata for all mandis, optionally filtered by commodity.
+    Every mandi has coordinates (with approximate flag) or a visible flag ('location unknown').
+    """
     matrix = load_mandi_matrix()
     matrix_map = {m["market"]: m for m in matrix.get("mandis", [])}
 
@@ -122,12 +124,21 @@ def get_mandis(crop: Optional[str] = None) -> List[Dict[str, Any]]:
     for row in rows:
         mkt = row["market"]
         info = matrix_map.get(mkt, {})
+        m_lat = info.get("lat")
+        m_lng = info.get("lng")
+        has_coords = m_lat is not None and m_lng is not None
+        approx = bool(info.get("coordinates_approximate", True)) if has_coords else False
+        flag = "approximate" if (has_coords and approx) else ("location unknown" if not has_coords else "verified")
+
         results.append({
             "market": mkt,
-            "district": row["district"],
-            "lat": info.get("lat", 19.0),
-            "lng": info.get("lng", 74.0),
-            "auction_cutoff": info.get("auction_cutoff", "12:00")
+            "district": row["district"] or info.get("district", "Unknown"),
+            "lat": float(m_lat) if has_coords else None,
+            "lng": float(m_lng) if has_coords else None,
+            "auction_cutoff": info.get("auction_cutoff", "12:00"),
+            "coordinates_approximate": approx,
+            "flag": flag,
+            "location_status": "known" if has_coords else "location unknown"
         })
     return results
 

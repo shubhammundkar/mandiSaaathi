@@ -6,7 +6,9 @@ stale-data deprioritization, and the canonical test: nearest Rs 200 today beats 
 
 from datetime import datetime, timedelta
 import pytest
+from fastapi.testclient import TestClient
 
+from backend.main import app
 from backend.services.data_service import get_data_status, get_crops, get_mandis
 from backend.services.advisory_engine import (
     calculate_advisory,
@@ -15,6 +17,8 @@ from backend.services.advisory_engine import (
     load_config,
     rank_and_evaluate
 )
+
+client = TestClient(app)
 
 
 def test_data_status_ready():
@@ -349,4 +353,80 @@ def test_rank_and_evaluate_excludes_unknown_location():
     assert res["best_recommendation"]["market"] == "ValidMandi"
     assert not any(c["market"] == "NoCoordMandi" for c in res["comparisons"])
     assert any(ex["market"] == "NoCoordMandi" and ex["flag"] == "location unknown" for ex in res["excluded_markets"])
+
+
+def test_advise_pune_sensible_distances():
+    """Verifies that /api/advise for Pune lists sensible distances (tens or hundreds of km, not 8)."""
+    res = client.post("/api/advise", json={"crop": "Tomato", "district": "Pune"})
+    assert res.status_code == 200
+    data = res.json()
+    best = data.get("best_recommendation")
+    assert best is not None
+    assert "distance_km" in best
+    # Pune local APMC is across town (~3.5 km)
+    assert 1.0 <= best["distance_km"] <= 30.0
+
+    comps = data.get("comparisons", [])
+    assert len(comps) > 0
+    for comp in comps:
+        dist = comp["distance_km"]
+        assert dist is not None
+        # All non-local comparison mandis are tens or hundreds of km away (not 8.0 km)
+        assert dist != 8.0, f"Mandi {comp['market']} must not have fallback 8.0 km distance!"
+        # Distance should be sensible between 10 km and 1000 km
+        assert 10.0 <= dist <= 1000.0, f"Mandi {comp['market']} has unexpected distance {dist}"
+
+    # Specifically check Pimpalgaon Baswant in comparisons
+    pimp = next((c for c in comps if "Pimpalgaon" in c["market"]), None)
+    if pimp:
+        assert pimp["distance_km"] > 200.0, f"Pimpalgaon should be ~230 km from Pune, got {pimp['distance_km']}"
+
+
+def test_api_mandis_has_coordinates_or_visible_flag():
+    """Verifies that every mandi in /api/mandis has coordinates or a visible flag."""
+    from backend.database import execute_query
+
+    res = client.get("/api/mandis")
+    assert res.status_code == 200
+    mandis = res.json().get("mandis", [])
+    assert len(mandis) >= 15
+
+    for m in mandis:
+        assert "market" in m
+        assert "district" in m
+        if m.get("lat") is not None and m.get("lng") is not None:
+            assert isinstance(m["lat"], (int, float))
+            assert isinstance(m["lng"], (int, float))
+            assert m["flag"] in ("approximate", "verified")
+            assert m["location_status"] == "known"
+        else:
+            assert m["flag"] == "location unknown"
+            assert m["location_status"] == "location unknown"
+
+    # Insert an unmapped market to test visible flag when coordinates are missing
+    unmapped_market = "UnmappedTestMandi"
+    execute_query("""
+        INSERT INTO mandi_prices (
+            state, district, market, commodity, variety, grade,
+            arrival_date, min_price, max_price, modal_price,
+            arrival_quantity, source, is_sample, fetched_at
+        ) VALUES (
+            'Maharashtra', 'MysteryDistrict', ?, 'Tomato', 'Hybrid', 'FAQ',
+            '2026-10-08', 2000.0, 2500.0, 2200.0, 50.0, 'sample', 1, '2026-10-08T12:00:00'
+        )
+    """, (unmapped_market,))
+
+    try:
+        res2 = client.get("/api/mandis")
+        assert res2.status_code == 200
+        mandis2 = res2.json().get("mandis", [])
+        unmapped_entry = next((m for m in mandis2 if m["market"] == unmapped_market), None)
+        assert unmapped_entry is not None
+        assert unmapped_entry["lat"] is None
+        assert unmapped_entry["lng"] is None
+        assert unmapped_entry["flag"] == "location unknown"
+        assert unmapped_entry["location_status"] == "location unknown"
+    finally:
+        execute_query("DELETE FROM mandi_prices WHERE market = ?", (unmapped_market,))
+
 
