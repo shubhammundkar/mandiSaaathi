@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: mandisaathi
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    plan: free
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: DATABASE_PATH
+        value: data/mandisaathi.db
+      - key: GEMINI_API_KEY
+        sync: false
