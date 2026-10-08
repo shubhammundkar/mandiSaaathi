@@ -245,11 +245,24 @@ def main():
         default=None,
         help="Path to CSV file or directory of CSV files downloaded from agmarknet.gov.in"
     )
+    parser.add_argument(
+        "--purge-sample",
+        action="store_true",
+        help="Purge all sample/mock rows (is_sample=1) from the database before loading"
+    )
     args = parser.parse_args()
 
     print("=" * 70)
     print("Mandi Saathi — Manual Agmarknet CSV Loader")
     print("=" * 70)
+
+    if args.purge_sample:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM mandi_prices WHERE is_sample = 1 OR source = 'sample'")
+            purged = cursor.rowcount
+            conn.commit()
+            print(f"Purged {purged} sample/synthetic rows from mandi_prices.")
 
     target_paths: List[Path] = []
     if args.csv_path:
