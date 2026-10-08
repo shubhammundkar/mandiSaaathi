@@ -210,3 +210,49 @@ def test_gemini_fallback_and_extraction(monkeypatch):
     assert result["location"] == "Pune"
     assert result["intent"] == "best_market"
 
+
+def test_marathi_pune_jilha_query():
+    """Verifies that 'Mala 20 quintal tomato vikaycha aahe, Pune jilha'
+
+    returns crop Tomato, quantity 20, district Pune.
+    """
+    res = client.post("/api/chat", json={
+        "message": "Mala 20 quintal tomato vikaycha aahe, Pune jilha"
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert data["entities"]["crop"] == "Tomato"
+    assert data["entities"]["quantity"] == 20.0
+    assert data["entities"]["location"] == "Pune"
+    assert data["intent"] == "best_market"
+    assert data["follow_up_needed"] is False
+
+
+def test_blank_gemini_key_fallback(monkeypatch):
+    """Verifies that with GEMINI_API_KEY blank, fallback still works."""
+    import backend.services.nlp_service as nlp
+    monkeypatch.setattr(nlp, "GEMINI_API_KEY", "")
+
+    res = client.post("/api/chat", json={
+        "message": "Nashik me 50 kwintal pyaaz kaha bechu?"
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert data["entities"]["crop"] == "Onion"
+    assert data["entities"]["quantity"] == 50.0
+    assert data["entities"]["location"] == "Nashik"
+
+
+def test_vague_query_price_follow_up():
+    """Verifies that a vague query like 'price?' gets a single follow-up question."""
+    res = client.post("/api/chat", json={
+        "message": "price?"
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert data["intent"] == "price_check"
+    assert data["missing_field"] == "crop"
+    assert data["follow_up_needed"] is True
+    assert ("crop" in data["reply"].lower() or "फसल" in data["reply"] or "पीक" in data["reply"])
+
+
