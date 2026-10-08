@@ -102,6 +102,21 @@ export const translations = {
     error_title: "Unable to Connect to Mandi Engine",
     error_server_down: "The Mandi Saathi backend service is offline or unreachable. Please verify your connection or ensure the backend service is running.",
 
+    // Chat & Voice
+    chat_title: "AI Voice & Text Mandi Advisor",
+    chat_subtitle: "Ask in English, Hindi, or Marathi to get instant net return prices and storage advice.",
+    chat_input_placeholder: "Type or tap the mic to speak (e.g. 20q tomato Pune)...",
+    chat_quick_1: "Where to sell 20q Tomato in Pune?",
+    chat_quick_2: "Should I sell or store Onion in Lasalgaon?",
+    chat_quick_3: "What is today's tomato price in Pune?",
+    chat_quick_4: "Where should I sell 30q Tur in Latur?",
+    chat_voice_unsupported: "Voice input is not supported in this browser. You can type your question directly below.",
+    chat_listening: "Listening... speak now",
+    chat_mute_voice: "Mute voice",
+    chat_unmute_voice: "Unmute voice",
+    chat_view_in_advisor: "View in Advisor",
+    chat_sending: "Analyzing...",
+
     // Footer
     footer_credit: "Data source: Agmarknet (agmarknet.gov.in) via data.gov.in",
     footer_hackathon: "VORTEX 2K26 • Climate, Agriculture & Rural Innovation"
@@ -205,6 +220,21 @@ export const translations = {
     error_title: "मंडी सेवा से संपर्क नहीं हो पाया",
     error_server_down: "मंडी साथी बैकएंड सेवा अभी बंद है या संपर्क नहीं हो पा रहा है। कृपया अपना इंटरनेट कनेक्शन जांचें या सर्वर शुरू करें।",
 
+    // Chat & Voice
+    chat_title: "AI आवाज़ एवं चैट मंडी सलाहकार",
+    chat_subtitle: "मराठी, हिंदी या अंग्रेजी में बोलें या लिखें और तुरंत मंडी भाव व बिक्री समय सलाह पाएं।",
+    chat_input_placeholder: "लिखें या माइक दबाकर बोलें (उदा: 20q टमाटर पुणे)...",
+    chat_quick_1: "पुणे में 20 क्विंटल टमाटर कहाँ बेचूं?",
+    chat_quick_2: "लासलगांव में प्याज रखें या बेचें?",
+    chat_quick_3: "पुणे में टमाटर का आज का भाव क्या है?",
+    chat_quick_4: "लातूर में 30 क्विंटल तूर कहाँ बेचूं?",
+    chat_voice_unsupported: "इस ब्राउज़र में आवाज़ पहचान उपलब्ध नहीं है। आप नीचे लिखकर पूछ सकते हैं।",
+    chat_listening: "सुन रहे हैं... बोलिए",
+    chat_mute_voice: "आवाज़ म्यूट करें",
+    chat_unmute_voice: "आवाज़ चालू करें",
+    chat_view_in_advisor: "सलाहकार में देखें",
+    chat_sending: "जांच रहे हैं...",
+
     // Footer
     footer_credit: "डेटा स्रोत: Agmarknet (agmarknet.gov.in) via data.gov.in",
     footer_hackathon: "VORTEX 2K26 • जलवायु, कृषि एवं ग्रामीण नवाचार"
@@ -307,6 +337,21 @@ export const translations = {
     empty_text: "निवडलेल्या जिल्ह्यात या पिकासाठी अलीकडे कोणतेही बाजारभाव नोंदवले गेले नाहीत. कृपया दुसरे पीक किंवा जवळचा जिल्हा निवडा.",
     error_title: "मंडी सर्व्हरशी संपर्क होऊ शकला नाही",
     error_server_down: "मंडी साथी बॅकएंड सर्व्हिस सध्या बंद आहे किंवा संपर्क होत नाही आहे. कृपया आपले इंटरनेट कनेक्शन तपासा किंवा सर्व्हर सुरू करा.",
+
+    // Chat & Voice
+    chat_title: "AI बोलून विचारा - मंडी सल्लागार",
+    chat_subtitle: "मराठी, हिंदी किंवा इंग्रजीत बोला किंवा लिहा आणि अचूक बाजारभाव व विक्री सल्ला मिळवा.",
+    chat_input_placeholder: "लिहा किंवा माइक दाबून बोला (उदा: २० क्विंटल टोमॅटो पुणे)...",
+    chat_quick_1: "पुण्यात २० क्विंटल टोमॅटो कुठे विकू?",
+    chat_quick_2: "लासलगावमध्ये कांदा विकू की ठेवू?",
+    chat_quick_3: "पुण्यात टोमॅटोचा आजचा भाव काय आहे?",
+    chat_quick_4: "लातूरमध्ये ३० क्विंटल तूर कुठे विकू?",
+    chat_voice_unsupported: "या ब्राउझरमध्ये व्हॉइस इनपुट समर्थित नाही. तुम्ही खाली थेट टाइप करू शकता.",
+    chat_listening: "ऐकत आहे... बोला",
+    chat_mute_voice: "आवाज बंद करा",
+    chat_unmute_voice: "आवाज सुरू करा",
+    chat_view_in_advisor: "सल्लागारामध्ये बघा",
+    chat_sending: "विश्लेषण सुरू आहे...",
 
     // Footer
     footer_credit: "माहिती स्त्रोत: Agmarknet (agmarknet.gov.in) via data.gov.in",

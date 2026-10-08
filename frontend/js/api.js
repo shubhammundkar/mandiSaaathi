@@ -106,6 +106,17 @@ class ApiClient {
     if (vehicle) params.append('vehicle', vehicle);
     return this.fetchWithTimeout(`/api/backtest?${params.toString()}`, {}, 18000);
   }
+
+  async sendChat(message, language = null, sessionId = null) {
+    return this.fetchWithTimeout('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify({
+        message,
+        language: language || undefined,
+        session_id: sessionId || undefined
+      })
+    }, 15000);
+  }
 }
 
 export const api = new ApiClient();
