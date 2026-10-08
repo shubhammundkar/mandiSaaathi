@@ -41,12 +41,14 @@ from backend.routes.crops import router as crops_router
 from backend.routes.advisor import router as advisor_router
 from backend.routes.forecast import router as forecast_router
 from backend.routes.backtest import router as backtest_router
+from backend.routes.chat import router as chat_router
 
 # Include API Routers
 app.include_router(crops_router)
 app.include_router(advisor_router)
 app.include_router(forecast_router)
 app.include_router(backtest_router)
+app.include_router(chat_router)
 
 # Mount static files for frontend at root
 FRONTEND_DIR.mkdir(parents=True, exist_ok=True)
