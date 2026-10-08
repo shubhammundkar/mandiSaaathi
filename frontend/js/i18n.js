@@ -117,6 +117,24 @@ export const translations = {
     chat_view_in_advisor: "View in Advisor",
     chat_sending: "Analyzing...",
 
+    // Alerts & Community
+    alerts_heading: "Mandi Alerts, Farmer Reports & Data Quality",
+    alerts_subheading: "Get daily morning WhatsApp market alerts, log actual crop sales, and inspect real-time reporting coverage across 23 Maharashtra APMC markets.",
+    alerts_tab_daily: "Daily Alerts & WhatsApp Preview",
+    alerts_tab_sold: '"I Sold Today" (Farmer Reports)',
+    alerts_tab_quality: "Mandi Data Quality",
+
+    // Proof & Math
+    proof_heading: "Backtest Proof & Calculation Logic",
+    proof_subheading: "Strictly leak-free simulation over the historical record across 23 Maharashtra APMC markets.",
+    proof_stat_avg_extra: "Average Extra / Quintal",
+    proof_stat_pct_better: "% Days Better",
+    proof_stat_days_tested: "Days Tested",
+
+    // About
+    about_heading: "About Mandi Saathi",
+    about_subheading: "An AI-powered market co-pilot protecting Indian farmers from the headline price trap through transparent net-in-pocket math and sell-timing intelligence.",
+
     // Footer
     footer_credit: "Data source: Agmarknet (agmarknet.gov.in) via data.gov.in",
     footer_hackathon: "VORTEX 2K26 • Climate, Agriculture & Rural Innovation"
@@ -236,6 +254,24 @@ export const translations = {
     chat_view_in_advisor: "सलाहकार में देखें",
     chat_sending: "जांच रहे हैं...",
 
+    // Alerts & Community
+    alerts_heading: "मंडी अलर्ट, किसान रिपोर्ट एवं डेटा गुणवत्ता",
+    alerts_subheading: "दैनिक सुबह व्हाट्सएप बाजार भाव अलर्ट प्राप्त करें, अपनी बिक्री दर्ज करें, और 23 एपीएमसी मंडियों की रिपोर्टिंग देखें।",
+    alerts_tab_daily: "दैनिक अलर्ट एवं व्हाट्सएप पूर्वावलोकन",
+    alerts_tab_sold: '"मैंने आज बेचा" (किसान रिपोर्ट)',
+    alerts_tab_quality: "मंडी डेटा गुणवत्ता",
+
+    // Proof & Math
+    proof_heading: "बैकटेस्ट परिणाम एवं गणितीय प्रमाण",
+    proof_subheading: "महाराष्ट्र की 23 मंडियों के ऐतिहासिक आंकड़ों पर पूरी तरह पारदर्शी एवं लीक-मुक्त सिमुलेशन।",
+    proof_stat_avg_extra: "औसत अतिरिक्त लाभ / क्विंटल",
+    proof_stat_pct_better: "% दिन बेहतर परिणाम",
+    proof_stat_days_tested: "परीक्षण किए गए दिन",
+
+    // About
+    about_heading: "मंडी साथी के बारे में",
+    about_subheading: "किसानों को उच्च थोक भाव के धोखे से बचाने और सही शुद्ध मुनाफे तक पहुंचाने वाला एआई-संचालित कृषि सलाहकार।",
+
     // Footer
     footer_credit: "डेटा स्रोत: Agmarknet (agmarknet.gov.in) via data.gov.in",
     footer_hackathon: "VORTEX 2K26 • जलवायु, कृषि एवं ग्रामीण नवाचार"
@@ -354,6 +390,24 @@ export const translations = {
     chat_unmute_voice: "आवाज सुरू करा",
     chat_view_in_advisor: "सल्लागारामध्ये बघा",
     chat_sending: "विश्लेषण सुरू आहे...",
+
+    // Alerts & Community
+    alerts_heading: "बाजारभाव अलर्ट, शेतकरी नोंदी व डेटा गुणवत्ता",
+    alerts_subheading: "दररोज सकाळी व्हॉट्सॲपवर बाजारभाव मिळवा, स्वतःचे विक्री भाव नोंदवा आणि २३ बाजार समित्यांची अचूक आकडेवारी तपासा.",
+    alerts_tab_daily: "दैनिक अलर्ट व व्हॉट्सॲप मेसेज",
+    alerts_tab_sold: '"मी आज विकले" (शेतकरी नोंदी)',
+    alerts_tab_quality: "बाजार डेटा गुणवत्ता",
+
+    // Proof & Math
+    proof_heading: "बॅकटेस्ट पडताळणी व हिशोबाचा पुरावा",
+    proof_subheading: "महाराष्ट्रातील २३ बाजार समित्यांच्या ९० दिवसांच्या प्रत्यक्ष व्यवहारांवर आधारित पारदर्शक व वस्तुनिष्ठ पडताळणी.",
+    proof_stat_avg_extra: "सरासरी अतिरिक्त नफा / क्विंटल",
+    proof_stat_pct_better: "% दिवस अधिक फायदेशीर",
+    proof_stat_days_tested: "तपासलेले दिवस",
+
+    // About
+    about_heading: "मंडी साथी बद्दल",
+    about_subheading: "शेतकऱ्यांना लांबच्या बाजारातील खोट्या दरांच्या फसवणुकीपासून वाचवून खऱ्या निव्वळ नफ्याची हमी देणारा एआय तंत्रज्ञान सल्लागार.",
 
     // Footer
     footer_credit: "माहिती स्त्रोत: Agmarknet (agmarknet.gov.in) via data.gov.in",

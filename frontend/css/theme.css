@@ -8,7 +8,7 @@
   --primary: #81C784;
   --primary-dark: #4CAF50;
   --text: #1F3A2B;
-  --muted: #6B8576;
+  --muted: #4F6A5B;
   --peach: #FFE9D2;
   --sky: #E3F1FB;
   --yellow: #FFF6D6;
@@ -67,7 +67,9 @@ button, input, select, textarea {
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
-a:focus-visible {
+textarea:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
   outline: 2px solid var(--primary-dark);
   outline-offset: 2px;
 }

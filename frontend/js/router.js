@@ -1,5 +1,4 @@
-// Mandi Saathi - Hash Router
-import { translatePage } from './i18n.js';
+import { translatePage, getLanguage } from './i18n.js';
 
 const routes = {
   '#/advisor': () => import('./pages/advisor.js'),
@@ -12,10 +11,26 @@ const routes = {
   '#/design': () => import('./pages/design.js')
 };
 
+const routeTitles = {
+  '#/advisor': { en: 'Advisor | Mandi Saathi', hi: 'सलाहकार | मंडी साथी', mr: 'सल्लागार | मंडी साथी' },
+  '#/chat': { en: 'Voice Chat | Mandi Saathi', hi: 'आवाज़ बातचीत | मंडी साथी', mr: 'बोलून विचारा | मंडी साथी' },
+  '#/alerts': { en: 'Daily Alerts | Mandi Saathi', hi: 'मंडी भाव अलर्ट | मंडी साथी', mr: 'बाजारभाव अलर्ट | मंडी साथी' },
+  '#/data-quality': { en: 'Data Quality | Mandi Saathi', hi: 'डेटा गुणवत्ता | मंडी साथी', mr: 'डेटा गुणवत्ता | मंडी साथी' },
+  '#/farmer-reports': { en: 'Farmer Reports | Mandi Saathi', hi: 'किसान रिपोर्ट | मंडी साथी', mr: 'शेतकरी नोंदी | मंडी साथी' },
+  '#/proof': { en: 'Proof & Calculation Logic | Mandi Saathi', hi: 'हिसाब-किताब व पुरावा | मंडी साथी', mr: 'हिशोब व पुरावा | मंडी साथी' },
+  '#/about': { en: 'About | Mandi Saathi', hi: 'परिचय | मंडी साथी', mr: 'माहिती | मंडी साथी' },
+  '#/design': { en: 'Design System | Mandi Saathi', hi: 'डिज़ाइन सिस्टम | मंडी साथी', mr: 'डिझाइन सिस्टीम | मंडी साथी' }
+};
+
 export async function navigate() {
   const hash = window.location.hash || '#/advisor';
   const container = document.getElementById('app-root');
   if (!container) return;
+
+  // Set localized document title
+  const currentLang = getLanguage() || 'en';
+  const titleObj = routeTitles[hash] || routeTitles['#/advisor'];
+  document.title = titleObj[currentLang] || titleObj['en'] || 'Mandi Saathi';
 
   // Find matching route or fallback to advisor
   const loader = routes[hash] || routes['#/advisor'];

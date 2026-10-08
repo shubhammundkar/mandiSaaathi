@@ -56,6 +56,7 @@
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--muted);
+  min-height: 44px;
   transition: all 0.2s ease;
 }
 
@@ -83,14 +84,18 @@
 .lang-btn {
   border: none;
   background: transparent;
-  padding: 5px 12px;
-  font-size: 0.8rem;
+  padding: 8px 14px;
+  font-size: 0.82rem;
   font-weight: 600;
   border-radius: var(--radius-pill);
   cursor: pointer;
   color: var(--muted);
   transition: all 0.2s ease;
-  min-height: 32px;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .lang-btn:hover {
@@ -125,7 +130,7 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--border);
-  padding: 6px 12px 10px 12px;
+  padding: 4px 8px 8px 8px;
   z-index: 100;
   box-shadow: 0 -4px 16px rgba(31, 58, 43, 0.05);
 }
@@ -142,13 +147,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   padding: 6px 8px;
   border-radius: 12px;
   color: var(--muted);
   font-size: 0.75rem;
   font-weight: 500;
-  min-width: 56px;
+  min-width: 48px;
+  min-height: 48px;
   transition: all 0.2s ease;
 }
 
@@ -227,7 +234,7 @@
 
 .alerts-tab-btn {
   flex: 1;
-  min-height: 42px;
+  min-height: 44px;
   border: none;
   background: transparent;
   padding: 8px 16px;
@@ -458,4 +465,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Small mobile screens (360px - 480px) */
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+  }
+  .card {
+    padding: 16px;
+  }
+  .header-container {
+    height: 58px;
+  }
+  .brand-logo {
+    font-size: 1.1rem;
+  }
+  .proof-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .about-step-grid {
+    grid-template-columns: 1fr;
+  }
+  .worse-days-table th,
+  .worse-days-table td {
+    padding: 8px 6px;
+    font-size: 0.8rem;
+  }
 }

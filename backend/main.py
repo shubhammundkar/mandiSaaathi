@@ -40,6 +40,14 @@ def health_check():
         "hackathon": "VORTEX 2K26"
     }
 
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    """Lightweight inline SVG favicon preventing 404 console logs."""
+    from fastapi.responses import Response
+    svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌱</text></svg>'
+    return Response(content=svg, media_type="image/svg+xml")
+
 from backend.routes.crops import router as crops_router
 from backend.routes.advisor import router as advisor_router
 from backend.routes.forecast import router as forecast_router
