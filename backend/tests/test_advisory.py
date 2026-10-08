@@ -251,3 +251,102 @@ def test_advisory_ranking_tomato():
         for comp in result["comparisons"]:
             assert comp["net_return_per_quintal"] <= prev_net
             prev_net = comp["net_return_per_quintal"]
+
+
+def test_market_no_coordinates_never_recommended_and_pune_to_pimpalgaon_distance():
+    """Test: a market with no coordinates is never recommended, and Pune to Pimpalgaon distance is not 8 km."""
+    from backend.database import execute_query
+    from backend.services.data_service import load_mandi_matrix
+    from backend.services.advisory_engine import get_origin_coords
+
+    # 1. Verify Pune to Pimpalgaon distance is NOT 8 km
+    matrix = load_mandi_matrix()
+    matrix_map = {m["market"]: m for m in matrix.get("mandis", [])}
+    assert "Pimpalgaon" in matrix_map
+    pimp = matrix_map["Pimpalgaon"]
+    pune_lat, pune_lng = get_origin_coords("Pune")
+
+    dist_pune_pimpalgaon = haversine_distance(pune_lat, pune_lng, pimp["lat"], pimp["lng"])
+    # Real road distance between Pune and Pimpalgaon (Nashik) is ~230 km
+    assert dist_pune_pimpalgaon != 8.0, "Pune to Pimpalgaon distance must not be the fallback 8.0 km!"
+    assert 180.0 <= dist_pune_pimpalgaon <= 260.0, f"Expected distance ~230 km, got {dist_pune_pimpalgaon}"
+
+    # Verify advisory engine calculates ~230 km and not 8 km when evaluating Pimpalgaon from Pune
+    adv = calculate_advisory(crop="Tomato", district="Pune")
+    all_recs = ([adv["best_recommendation"]] if adv.get("best_recommendation") else []) + adv.get("comparisons", [])
+    pimp_adv = next((m for m in all_recs if m["market"] == "Pimpalgaon"), None)
+    if pimp_adv:
+        assert pimp_adv["distance_km"] != 8.0
+        assert pimp_adv["distance_km"] > 150.0
+
+    # 2. Verify a market with no coordinates is NEVER recommended
+    ghost_market = "UnmappedGhostMandi"
+    execute_query("""
+        INSERT INTO mandi_prices (
+            state, district, market, commodity, variety, grade,
+            arrival_date, min_price, max_price, modal_price,
+            arrival_quantity, source, is_sample, fetched_at
+        ) VALUES (
+            'Maharashtra', 'UnknownDist', ?, 'Tomato', 'Hybrid', 'FAQ',
+            '2026-10-08', 9500.0, 9900.0, 9800.0, 50.0, 'sample', 1, '2026-10-08T12:00:00'
+        )
+    """, (ghost_market,))
+
+    try:
+        res = calculate_advisory(crop="Tomato", district="Pune")
+        best = res.get("best_recommendation")
+        comparisons = res.get("comparisons", [])
+        excluded = res.get("excluded_markets", [])
+
+        # Market with no coordinates must NEVER be best recommendation
+        assert best is not None
+        assert best["market"] != ghost_market, "Market with no coordinates must NEVER be recommended!"
+
+        # Must NOT appear in comparisons ranking
+        assert not any(c["market"] == ghost_market for c in comparisons)
+
+        # Must be in excluded_markets with flag 'location unknown'
+        ghost_ex = [m for m in excluded if m["market"] == ghost_market]
+        assert len(ghost_ex) == 1
+        assert ghost_ex[0]["flag"] == "location unknown"
+        assert ghost_ex[0]["distance_km"] is None  # Never invented!
+        assert ghost_ex[0]["is_excluded"] is True
+    finally:
+        execute_query("DELETE FROM mandi_prices WHERE market = ?", (ghost_market,))
+
+
+def test_rank_and_evaluate_excludes_unknown_location():
+    """Direct test that rank_and_evaluate excludes candidates with missing distance or flag 'location unknown'."""
+    cand_unknown = {
+        "market": "NoCoordMandi",
+        "district": "Nowhere",
+        "distance_km": None,
+        "flag": "location unknown",
+        "is_excluded": True,
+        "net_return_per_quintal": 5000.0,
+        "gross_modal_price": 5200.0
+    }
+    cand_valid = {
+        "market": "ValidMandi",
+        "district": "Pune",
+        "distance_km": 20.0,
+        "travel_hours": 0.5,
+        "is_stale": False,
+        "missed_cutoff": False,
+        "gross_modal_price": 2000.0,
+        "net_return_per_quintal": 1850.0,
+        "costs": {"transport_per_q": 36.0, "loading_unloading_per_q": 30.0}
+    }
+
+    res = rank_and_evaluate(
+        evaluated=[cand_unknown, cand_valid],
+        crop="Tomato",
+        district="Pune",
+        quantity_quintals=20.0,
+        vehicle_type="tempo",
+        departure_hour=7.0
+    )
+    assert res["best_recommendation"]["market"] == "ValidMandi"
+    assert not any(c["market"] == "NoCoordMandi" for c in res["comparisons"])
+    assert any(ex["market"] == "NoCoordMandi" and ex["flag"] == "location unknown" for ex in res["excluded_markets"])
+

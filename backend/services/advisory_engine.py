@@ -28,7 +28,11 @@ def load_config() -> Dict[str, Any]:
 
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Calculates road-estimated distance (km) using Haversine with a 1.25 winding factor."""
+    """Calculates road-estimated distance (km) using Haversine with a 1.25 winding factor.
+    Strictly requires non-None coordinates: never invents a distance.
+    """
+    if lat1 is None or lon1 is None or lat2 is None or lon2 is None:
+        raise ValueError("Cannot calculate distance with missing coordinates. Never invent a distance.")
     R = 6371.0  # Earth radius in km
     phi1 = math.radians(lat1)
     phi2 = math.radians(lat2)
@@ -56,15 +60,49 @@ DISTRICT_COORDS: Dict[str, tuple[float, float]] = {
     "Kolhapur": (16.7050, 74.2433),
     "Nagpur": (21.1458, 79.0882),
     "Mumbai": (19.0760, 72.8777),
+    "Satara": (17.6805, 73.9989),
+    "Sangli": (16.8524, 74.5815),
+    "Chhatrapati Sambhajinagar": (19.8762, 75.3433),
+    "Aurangabad": (19.8762, 75.3433),
+    "Jalna": (19.8410, 75.8864),
+    "Beed": (18.9891, 75.7601),
+    "Dharashiv": (18.1856, 76.0419),
+    "Osmanabad": (18.1856, 76.0419),
+    "Nanded": (19.1383, 77.3210),
+    "Parbhani": (19.2608, 76.7748),
+    "Hingoli": (19.7196, 77.1477),
+    "Buldhana": (20.5300, 76.1800),
+    "Washim": (20.1110, 77.1350),
+    "Yavatmal": (20.3888, 78.1204),
+    "Wardha": (20.7453, 78.6022),
+    "Chandrapur": (19.9615, 79.2961),
+    "Gadchiroli": (20.1809, 79.9934),
+    "Bhandara": (21.1714, 79.6543),
+    "Gondia": (21.4598, 80.1961),
+    "Dhule": (20.9042, 74.7749),
+    "Nandurbar": (21.3697, 74.2403),
+    "Raigad": (18.5158, 73.1818),
+    "Ratnagiri": (16.9902, 73.3120),
+    "Sindhudurg": (16.1158, 73.6897),
+    "Thane": (19.2183, 72.9781),
+    "Palghar": (19.6967, 72.7699),
 }
 
 
 def get_origin_coords(district: str) -> tuple[float, float]:
     """Resolves origin coordinates from district name."""
-    clean = district.strip().title()
+    clean = district.strip().lower()
     for d_name, coords in DISTRICT_COORDS.items():
-        if d_name.lower() in clean.lower():
+        if d_name.lower() in clean or clean in d_name.lower():
             return coords
+    try:
+        matrix = load_mandi_matrix()
+        for m in matrix.get("mandis", []):
+            if m.get("lat") is not None and m.get("lng") is not None:
+                if m.get("district", "").lower() in clean or m.get("market", "").lower() in clean:
+                    return (float(m["lat"]), float(m["lng"]))
+    except Exception:
+        pass
     return (18.5204, 73.8567)
 
 
@@ -124,10 +162,51 @@ def compute_mandi_metrics(
     spoilage_cfg = config.get("spoilage_per_day", {})
     daily_spoilage = float(overrides.get("spoilage_rate", spoilage_cfg.get(crop, 0.005)))
 
-    # Distance & transit
-    m_lat = candidate.get("lat", 18.5)
-    m_lng = candidate.get("lng", 73.8)
-    distance_km = haversine_distance(origin_lat, origin_lng, m_lat, m_lng)
+    # Distance & transit: Never invent a distance!
+    m_lat = candidate.get("lat")
+    m_lng = candidate.get("lng")
+    if m_lat is None or m_lng is None:
+        gross_price = float(candidate.get("modal_price", candidate.get("price", 0.0)))
+        arr_date_str = candidate.get("arrival_date", str(now_date))
+        return {
+            "market": candidate.get("market", "Unknown Mandi"),
+            "district": candidate.get("district", "Unknown District"),
+            "distance_km": None,
+            "travel_hours": None,
+            "arrival_time": None,
+            "auction_cutoff": candidate.get("auction_cutoff", "12:00"),
+            "missed_cutoff": False,
+            "arrival_day": None,
+            "gross_modal_price": gross_price,
+            "expected_price": gross_price,
+            "is_far_mandi": False,
+            "lower_bound_haircut_applied": False,
+            "price_range": {
+                "min": float(candidate.get("min_price", gross_price * 0.9)),
+                "modal": gross_price,
+                "max": float(candidate.get("max_price", gross_price * 1.1))
+            },
+            "costs": {
+                "transport_per_q": None,
+                "loading_unloading_per_q": None,
+                "market_fee_per_q": None,
+                "spoilage_per_q": None,
+                "total_deductions_per_q": None
+            },
+            "net_return_per_quintal": None,
+            "total_net_earnings": None,
+            "days_ago": 0,
+            "is_stale": False,
+            "confidence": "UNKNOWN",
+            "arrival_date": arr_date_str,
+            "source": candidate.get("source", "snapshot"),
+            "is_sample": bool(candidate.get("is_sample", 0)),
+            "flag": "location unknown",
+            "is_excluded": True,
+            "verdict_reason": "Excluded from ranking: location unknown (missing coordinates in mandi matrix)."
+        }
+
+    distance_km = haversine_distance(origin_lat, origin_lng, float(m_lat), float(m_lng))
     travel_hours = round(max(0.2, distance_km / max(10.0, speed_kmh)), 1)
     arrival_hour = departure_hour + travel_hours
 
@@ -226,15 +305,37 @@ def rank_and_evaluate(
     quantity_quintals: float,
     vehicle_type: str,
     departure_hour: float,
-    config: Optional[Dict[str, Any]] = None
+    config: Optional[Dict[str, Any]] = None,
+    excluded: Optional[List[Dict[str, Any]]] = None
 ) -> Dict[str, Any]:
-    """Sorts evaluated mandis, calculates break-even against nearest, and formats verdict."""
-    if not evaluated:
+    """Sorts evaluated mandis, calculates break-even against nearest, and formats verdict.
+    Markets missing lat/lng (flag='location unknown' or distance_km=None) are strictly
+    excluded from ranking.
+    """
+    excluded_list = list(excluded or [])
+    valid_evaluated = []
+    for item in (evaluated or []):
+        if item.get("flag") == "location unknown" or item.get("distance_km") is None or item.get("is_excluded"):
+            item["flag"] = "location unknown"
+            item["is_excluded"] = True
+            excluded_list.append(item)
+        else:
+            valid_evaluated.append(item)
+
+    if not valid_evaluated:
         return {
-            "crop": crop,
-            "district": district,
+            "query": {
+                "crop": crop,
+                "district": district,
+                "quantity_quintals": quantity_quintals,
+                "vehicle_type": vehicle_type,
+                "departure_hour": f"{int(departure_hour):02d}:00"
+            },
             "best_recommendation": None,
-            "comparisons": []
+            "nearest_baseline": None,
+            "comparisons": [],
+            "excluded_markets": excluded_list,
+            "unranked": excluded_list
         }
 
     config = config or load_config()
@@ -242,11 +343,11 @@ def rank_and_evaluate(
     crop_spoil_rate = float(config.get("spoilage_per_day", {}).get(crop, 0.005))
 
     # Find nearest mandi to serve as baseline
-    nearest_mandi = min(evaluated, key=lambda x: x["distance_km"])
+    nearest_mandi = min(valid_evaluated, key=lambda x: x["distance_km"])
     nearest_net = nearest_mandi["net_return_per_quintal"]
 
     # Calculate break-even price for all mandis against nearest
-    for item in evaluated:
+    for item in valid_evaluated:
         if item["market"] == nearest_mandi["market"]:
             item["break_even_price"] = item["gross_modal_price"]
             item["is_nearest"] = True
@@ -261,8 +362,8 @@ def rank_and_evaluate(
 
     # Sort descending by net return
     # Prioritize non-stale mandis for top ranking
-    fresh_mandis = [m for m in evaluated if not m["is_stale"]]
-    stale_mandis = [m for m in evaluated if m["is_stale"]]
+    fresh_mandis = [m for m in valid_evaluated if not m["is_stale"]]
+    stale_mandis = [m for m in valid_evaluated if m["is_stale"]]
 
     fresh_mandis.sort(key=lambda x: x["net_return_per_quintal"], reverse=True)
     stale_mandis.sort(key=lambda x: x["net_return_per_quintal"], reverse=True)
@@ -301,7 +402,9 @@ def rank_and_evaluate(
         },
         "best_recommendation": best,
         "nearest_baseline": nearest_mandi["market"],
-        "comparisons": sorted_list[1:] if len(sorted_list) > 1 else []
+        "comparisons": sorted_list[1:] if len(sorted_list) > 1 else [],
+        "excluded_markets": excluded_list,
+        "unranked": excluded_list
     }
 
 
@@ -315,7 +418,10 @@ def calculate_advisory(
     departure_hour: float = 7.0,
     overrides: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
-    """Entrypoint query fetching DB prices and evaluating all candidate mandis."""
+    """Entrypoint query fetching DB prices and evaluating candidate mandis.
+    Never invents a distance. Markets missing lat/lng in mandi_matrix.json
+    are strictly excluded from ranking with a flag 'location unknown'.
+    """
     district = district or "Pune"
     if lat is not None and lng is not None:
         origin_lat, origin_lng = lat, lng
@@ -330,19 +436,47 @@ def calculate_advisory(
             "district": district,
             "error": f"No recent market trading records found for {crop}.",
             "best_recommendation": None,
-            "comparisons": []
+            "comparisons": [],
+            "excluded_markets": [],
+            "unranked": []
         }
 
     matrix = load_mandi_matrix()
     matrix_map = {m["market"]: m for m in matrix.get("mandis", [])}
 
     evaluated = []
+    excluded_markets = []
     for row in prices:
         mkt = row["market"]
-        info = matrix_map.get(mkt, {})
+        info = matrix_map.get(mkt)
         cand = dict(row)
-        cand["lat"] = info.get("lat", 18.5)
-        cand["lng"] = info.get("lng", 73.8)
+
+        m_lat = info.get("lat") if info else None
+        m_lng = info.get("lng") if info else None
+
+        if m_lat is None or m_lng is None:
+            # Markets missing lat/lng in mandi_matrix.json must be excluded from ranking with a flag 'location unknown'
+            cand["lat"] = None
+            cand["lng"] = None
+            cand["auction_cutoff"] = info.get("auction_cutoff", "12:00") if info else "12:00"
+            metrics = compute_mandi_metrics(
+                candidate=cand,
+                origin_lat=origin_lat,
+                origin_lng=origin_lng,
+                quantity_quintals=quantity_quintals,
+                vehicle_type=vehicle_type,
+                departure_hour=departure_hour,
+                crop=crop,
+                config=config,
+                overrides=overrides
+            )
+            metrics["flag"] = "location unknown"
+            metrics["is_excluded"] = True
+            excluded_markets.append(metrics)
+            continue
+
+        cand["lat"] = float(m_lat)
+        cand["lng"] = float(m_lng)
         cand["auction_cutoff"] = info.get("auction_cutoff", "12:00")
         metrics = compute_mandi_metrics(
             candidate=cand,
@@ -364,5 +498,7 @@ def calculate_advisory(
         quantity_quintals=quantity_quintals,
         vehicle_type=vehicle_type,
         departure_hour=departure_hour,
-        config=config
+        config=config,
+        excluded=excluded_markets
     )
+

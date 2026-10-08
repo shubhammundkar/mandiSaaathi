@@ -171,6 +171,66 @@
       "auction_cutoff": "12:00",
       "commodities": ["Onion", "Tomato", "Soyabean", "Wheat"],
       "coverage_records": 312
+    },
+    {
+      "market": "Pimpalgaon",
+      "district": "Nashik",
+      "lat": 20.1747,
+      "lng": 73.9856,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Tomato", "Onion", "Soyabean", "Wheat"],
+      "coverage_records": 312
+    },
+    {
+      "market": "Pimpalgaon Baswant",
+      "district": "Nashik",
+      "lat": 20.1747,
+      "lng": 73.9856,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Tomato", "Onion", "Soyabean", "Wheat"],
+      "coverage_records": 312
+    },
+    {
+      "market": "Rahata",
+      "district": "Ahilyanagar",
+      "lat": 19.6897,
+      "lng": 74.4842,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Soyabean", "Wheat"],
+      "coverage_records": 234
+    },
+    {
+      "market": "Shrirampur",
+      "district": "Ahilyanagar",
+      "lat": 19.6190,
+      "lng": 74.6567,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Soyabean", "Wheat"],
+      "coverage_records": 234
+    },
+    {
+      "market": "Vashi",
+      "district": "Mumbai",
+      "lat": 19.0771,
+      "lng": 73.0033,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Potato", "Tomato", "Wheat"],
+      "coverage_records": 312
+    },
+    {
+      "market": "Junnar",
+      "district": "Pune",
+      "lat": 19.2084,
+      "lng": 73.8767,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Tomato", "Onion", "Potato"],
+      "coverage_records": 234
     }
   ]
 }
