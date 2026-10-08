@@ -4,11 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from backend.config import FRONTEND_DIR
 from backend.database import init_db
+from backend.services.data_service import load_initial_data_if_empty
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize DB schema
     init_db()
+    # Load initial data if mandi_prices is empty
+    load_initial_data_if_empty()
     yield
 
 app = FastAPI(

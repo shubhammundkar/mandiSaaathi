@@ -83,6 +83,13 @@ class ApiClient {
     return this.fetchWithTimeout(`/api/mandis${query}`);
   }
 
+  async getPrices(crop = '', days = 30) {
+    const params = new URLSearchParams();
+    if (crop) params.append('crop', crop);
+    if (days) params.append('days', days);
+    return this.fetchWithTimeout(`/api/prices?${params.toString()}`);
+  }
+
   async calculateAdvise(payload) {
     return this.fetchWithTimeout('/api/advise', {
       method: 'POST',
