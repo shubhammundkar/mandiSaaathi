@@ -151,6 +151,26 @@
       "auction_cutoff": "12:00",
       "commodities": ["Cotton", "Red gram/Arhar/Tur(whole)", "Soyabean"],
       "coverage_records": 233
+    },
+    {
+      "market": "Latur",
+      "district": "Latur",
+      "lat": 18.4088,
+      "lng": 76.5604,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Soyabean", "Red gram/Arhar/Tur(whole)", "Wheat", "Onion"],
+      "coverage_records": 312
+    },
+    {
+      "market": "Lasalgaon",
+      "district": "Nashik",
+      "lat": 20.1472,
+      "lng": 74.2259,
+      "coordinates_approximate": true,
+      "auction_cutoff": "12:00",
+      "commodities": ["Onion", "Tomato", "Soyabean", "Wheat"],
+      "coverage_records": 312
     }
   ]
 }

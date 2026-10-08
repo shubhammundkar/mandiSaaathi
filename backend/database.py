@@ -89,6 +89,10 @@ def init_db() -> None:
         """)
         conn.commit()
 
+    # Automatically populate initial data if mandi_prices is empty
+    from backend.services.data_service import load_initial_data_if_empty
+    load_initial_data_if_empty()
+
 def get_db_connection() -> sqlite3.Connection:
     """Returns a SQLite connection with row factory enabled."""
     conn = sqlite3.connect(DATABASE_PATH)
@@ -97,24 +101,55 @@ def get_db_connection() -> sqlite3.Connection:
 
 def execute_query(query: str, params: Tuple[Any, ...] = ()) -> int:
     """Executes an INSERT/UPDATE/DELETE query and returns rowcount."""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query, params)
-        conn.commit()
-        return cursor.rowcount
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, params)
+            conn.commit()
+            return cursor.rowcount
+    except sqlite3.OperationalError as exc:
+        if "no such table" in str(exc).lower():
+            init_db()
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(query, params)
+                conn.commit()
+                return cursor.rowcount
+        raise
 
 def fetch_all(query: str, params: Tuple[Any, ...] = ()) -> List[dict]:
     """Fetches all rows as a list of dictionaries."""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query, params)
-        rows = cursor.fetchall()
-        return [dict(row) for row in rows]
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+            return [dict(row) for row in rows]
+    except sqlite3.OperationalError as exc:
+        if "no such table" in str(exc).lower():
+            init_db()
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(query, params)
+                rows = cursor.fetchall()
+                return [dict(row) for row in rows]
+        raise
 
 def fetch_one(query: str, params: Tuple[Any, ...] = ()) -> Optional[dict]:
     """Fetches a single row as a dictionary."""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(query, params)
-        row = cursor.fetchone()
-        return dict(row) if row else None
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, params)
+            row = cursor.fetchone()
+            return dict(row) if row else None
+    except sqlite3.OperationalError as exc:
+        if "no such table" in str(exc).lower():
+            init_db()
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(query, params)
+                row = cursor.fetchone()
+                return dict(row) if row else None
+        raise
+
