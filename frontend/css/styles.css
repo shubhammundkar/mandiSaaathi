@@ -212,3 +212,121 @@
     margin-bottom: 64px; /* Space above bottom bar */
   }
 }
+
+/* Alerts & Community Segmented Tabs */
+.alerts-tab-bar {
+  display: flex;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.alerts-tab-btn {
+  flex: 1;
+  min-height: 42px;
+  border: none;
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.alerts-tab-btn:hover {
+  color: var(--text);
+  background: rgba(225, 239, 228, 0.4);
+}
+
+.alerts-tab-btn.active {
+  background: var(--primary);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.25);
+}
+
+/* WhatsApp Message Preview UI */
+.whatsapp-window {
+  background: #ECE5DD;
+  border-radius: var(--radius-lg);
+  border: 1px solid #D1D7DB;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.whatsapp-header {
+  background: #075E54;
+  color: #FFFFFF;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.whatsapp-avatar {
+  width: 40px;
+  height: 40px;
+  background: #25D366;
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.whatsapp-bubble {
+  background: #DCF8C6;
+  color: #111B21;
+  border-radius: 8px;
+  padding: 14px;
+  margin: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  font-family: inherit;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.whatsapp-bubble-time {
+  text-align: right;
+  font-size: 0.72rem;
+  color: #667781;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.badge-farmer {
+  background: #FFF3E0;
+  color: #E65100;
+  border: 1px solid #FFE0B2;
+}
+
+.progress-bar-container {
+  height: 8px;
+  background: #E0E0E0;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+

@@ -124,6 +124,51 @@ class ApiClient {
       })
     }, 15000);
   }
+
+  // --- Alerts & Community Endpoints ---
+
+  async subscribeAlert(payload) {
+    return this.fetchWithTimeout('/api/alerts/subscribe', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  async getAlerts() {
+    return this.fetchWithTimeout('/api/alerts');
+  }
+
+  async deleteAlert(subscriptionId) {
+    return this.fetchWithTimeout(`/api/alerts/${subscriptionId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async getAlertPreview(payload) {
+    return this.fetchWithTimeout('/api/alerts/preview', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  async submitFarmerReport(payload) {
+    return this.fetchWithTimeout('/api/farmer-reports', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  async getFarmerReports(crop = '', market = '', limit = 50) {
+    const params = new URLSearchParams();
+    if (crop) params.append('crop', crop);
+    if (market) params.append('market', market);
+    if (limit) params.append('limit', limit);
+    return this.fetchWithTimeout(`/api/farmer-reports?${params.toString()}`);
+  }
+
+  async getDataQuality() {
+    return this.fetchWithTimeout('/api/data-quality');
+  }
 }
 
 export const api = new ApiClient();

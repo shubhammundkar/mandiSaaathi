@@ -10,9 +10,9 @@ router = APIRouter(prefix="/api", tags=["Chat & NLP"])
 
 
 class ChatRequest(BaseModel):
-    message: str = Field(..., example="Pune me 20 quintal tomato kaha bechu?")
-    language: Optional[str] = Field(None, example="hi")
-    session_id: Optional[str] = Field(None, example="user-session-123")
+    message: str = Field(..., examples=["Pune me 20 quintal tomato kaha bechu?"])
+    language: Optional[str] = Field(None, examples=["hi"])
+    session_id: Optional[str] = Field(None, examples=["user-session-123"])
 
 
 class ChatResponse(BaseModel):

@@ -10,16 +10,16 @@ router = APIRouter(prefix="/api", tags=["Advisory"])
 
 
 class AdvisoryRequest(BaseModel):
-    crop: str = Field(..., example="Tomato")
-    district: Optional[str] = Field("Pune", example="Pune")
-    lat: Optional[float] = Field(None, example=18.5204)
-    lng: Optional[float] = Field(None, example=73.8567)
-    quantity: Optional[float] = Field(None, example=20.0)
-    quantity_quintals: Optional[float] = Field(None, example=20.0)
-    vehicle: Optional[str] = Field(None, example="tempo")
-    vehicle_type: Optional[str] = Field(None, example="tempo")
-    departure_hour: float = Field(7.0, ge=0.0, le=24.0, example=7.0)
-    language: Optional[str] = Field("en", example="mr")
+    crop: str = Field(..., examples=["Tomato"])
+    district: Optional[str] = Field("Pune", examples=["Pune"])
+    lat: Optional[float] = Field(None, examples=[18.5204])
+    lng: Optional[float] = Field(None, examples=[73.8567])
+    quantity: Optional[float] = Field(None, examples=[20.0])
+    quantity_quintals: Optional[float] = Field(None, examples=[20.0])
+    vehicle: Optional[str] = Field(None, examples=["tempo"])
+    vehicle_type: Optional[str] = Field(None, examples=["tempo"])
+    departure_hour: float = Field(7.0, ge=0.0, le=24.0, examples=[7.0])
+    language: Optional[str] = Field("en", examples=["mr"])
     overrides: Optional[Dict[str, Any]] = None
 
 
