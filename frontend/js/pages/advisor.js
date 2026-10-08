@@ -368,20 +368,24 @@ async function fetchDataStatus(container) {
     state.dataStatus = status;
 
     const badgeContainer = container.querySelector('#data-status-badge');
-    if (badgeContainer && status) {
       const source = status.source || 'snapshot';
+      const isSample = source === 'sample' || Boolean(status.is_sample);
       let badgeClass = 'badge-sky';
       let iconName = 'database';
       let labelText = t('data_source_snapshot');
 
-      if (source === 'live') {
+      if (isSample) {
+        badgeClass = 'badge-yellow';
+        iconName = 'alert-triangle';
+        labelText = t('data_source_sample'); // "Sample data"
+      } else if (source === 'live') {
         badgeClass = 'badge-green';
         iconName = 'radio';
         labelText = t('data_source_live');
-      } else if (source === 'sample') {
-        badgeClass = 'badge-yellow';
-        iconName = 'alert-triangle';
-        labelText = t('data_source_sample');
+      } else if (source === 'manual_csv') {
+        badgeClass = 'badge-sky';
+        iconName = 'file-text';
+        labelText = t('data_source_manual_csv');
       }
 
       badgeContainer.innerHTML = `

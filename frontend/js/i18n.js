@@ -35,10 +35,10 @@ export const translations = {
     badge_unreliable: "Stale / Unreliable",
     badge_high_conf: "High Confidence",
     badge_med_conf: "Medium Confidence",
-    badge_low_conf: "Low Confidence",
     data_source_live: "Live Agmarknet",
+    data_source_manual_csv: "Manual Agmarknet CSV",
     data_source_snapshot: "90-Day Verified Snapshot",
-    data_source_sample: "Sample Fallback",
+    data_source_sample: "Sample data",
 
     // Advisor placeholders & form
     advisor_heading: "Smart Crop Sell Advisor",
@@ -155,6 +155,7 @@ export const translations = {
     badge_med_conf: "मध्यम विश्वसनीयता",
     badge_low_conf: "कम विश्वसनीयता",
     data_source_live: "लाइव अगमार्कनेट",
+    data_source_manual_csv: "मैनुअल अगमार्कनेट CSV",
     data_source_snapshot: "90-दिन सत्यापित स्नैपशॉट",
     data_source_sample: "नमूना डेटा",
 
@@ -273,6 +274,7 @@ export const translations = {
     badge_med_conf: "मध्यम विश्वासार्हता",
     badge_low_conf: "कमी विश्वासार्हता",
     data_source_live: "थेट ॲगमार्कनेट",
+    data_source_manual_csv: "मॅन्युअल ॲगमार्कनेट CSV",
     data_source_snapshot: "90-दिवसीय पडताळलेला डेटा",
     data_source_sample: "नमुना डेटा",
 

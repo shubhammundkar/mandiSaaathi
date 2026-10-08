@@ -88,16 +88,16 @@ def generate_snapshot():
                         "max_price": max_price,
                         "modal_price": modal_price,
                         "arrival_quantity": qty,
-                        "source": "snapshot",
-                        "is_sample": 0,
+                        "source": "sample",
+                        "is_sample": 1,
                         "fetched_at": datetime.now().isoformat()
                     })
                 current_date += timedelta(days=1)
 
     df = pd.DataFrame(rows)
-    out_file = data_dir / "agmarknet_maharashtra_snapshot.csv"
+    out_file = data_dir / "sample_history.csv"
     df.to_csv(out_file, index=False)
-    print(f"Snapshot written to {out_file}")
+    print(f"Sample history written to {out_file}")
     print(f"Total rows: {len(df)}")
     print(f"Unique markets: {df['market'].nunique()}")
     print(f"Commodities: {df['commodity'].unique().tolist()}")

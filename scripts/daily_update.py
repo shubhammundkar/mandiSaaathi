@@ -80,20 +80,23 @@ def run_daily_update(days_back: int = 3):
     
     print(f"Upserted {new_records} daily records to SQLite.")
     
-    # Export full 90-day refreshed dataset to snapshot CSV
-    all_rows = fetch_all("""
+    # Export real verified dataset (is_sample = 0) to snapshot CSV, never sample data
+    real_rows = fetch_all("""
         SELECT 
             state, district, market, commodity, variety, grade,
             arrival_date, min_price, max_price, modal_price,
             arrival_quantity, source, is_sample, fetched_at
         FROM mandi_prices
+        WHERE is_sample = 0
         ORDER BY arrival_date DESC, commodity, market
     """)
     
-    if all_rows:
-        export_df = pd.DataFrame(all_rows)
+    if real_rows:
+        export_df = pd.DataFrame(real_rows)
         export_df.to_csv(SNAPSHOT_PATH, index=False)
-        print(f"Refreshed snapshot exported to {SNAPSHOT_PATH} ({len(export_df)} total records).")
+        print(f"Refreshed real snapshot exported to {SNAPSHOT_PATH} ({len(export_df)} total records).")
+    else:
+        print("No real records (is_sample=0) in database to export to snapshot CSV.")
         
     print("=" * 60)
     print("Daily update completed successfully!")

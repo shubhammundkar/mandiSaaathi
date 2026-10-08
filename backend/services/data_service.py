@@ -20,15 +20,23 @@ def load_mandi_matrix() -> Dict[str, Any]:
 
 
 def get_data_status() -> Dict[str, Any]:
-    """Returns data source status, row counts, latest update timestamp, and monitoring health."""
+    """Returns data source status, row counts, latest update timestamp, and monitoring health.
+    
+    Strictly reports source 'sample' and is_sample=True whenever any sample rows exist.
+    """
+    sample_check = fetch_one("""
+        SELECT COUNT(*) as sample_count
+        FROM mandi_prices
+        WHERE is_sample = 1 OR source = 'sample'
+    """)
+    has_sample = bool(sample_check and sample_check["sample_count"] > 0)
+
     summary = fetch_one("""
         SELECT 
             COUNT(*) as total_records,
             MAX(arrival_date) as latest_date,
             COUNT(DISTINCT market) as monitored_mandis,
-            COUNT(DISTINCT commodity) as monitored_crops,
-            source,
-            is_sample
+            COUNT(DISTINCT commodity) as monitored_crops
         FROM mandi_prices
     """)
     
@@ -43,14 +51,31 @@ def get_data_status() -> Dict[str, Any]:
             "is_sample": False
         }
 
+    if has_sample:
+        active_source = "sample"
+        is_sample_flag = True
+    else:
+        source_row = fetch_one("""
+            SELECT source FROM mandi_prices
+            WHERE is_sample = 0
+            ORDER BY CASE
+                WHEN source = 'live' THEN 1
+                WHEN source = 'manual_csv' THEN 2
+                WHEN source = 'snapshot' THEN 3
+                ELSE 4 END
+            LIMIT 1
+        """)
+        active_source = source_row["source"] if source_row and source_row["source"] else "snapshot"
+        is_sample_flag = False
+
     return {
         "status": "ready",
-        "source": summary["source"] or "snapshot",
+        "source": active_source,
         "total_records": summary["total_records"],
         "latest_date": summary["latest_date"],
         "monitored_mandis": summary["monitored_mandis"],
         "monitored_crops": summary["monitored_crops"],
-        "is_sample": bool(summary["is_sample"])
+        "is_sample": is_sample_flag
     }
 
 

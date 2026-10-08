@@ -59,19 +59,39 @@ def chunk_date_range(from_date: str, to_date: str, chunk_days: int = 30) -> List
 
 
 def fetch_from_snapshot(commodity_name: str, from_date: str, to_date: str) -> pd.DataFrame:
-    """Fallback reader from verified offline snapshot."""
+    """Fallback reader from verified offline snapshot.
+    
+    Strictly accepts only real records where is_sample == 0 and source != 'sample'.
+    """
     if not SNAPSHOT_PATH.exists():
         logger.warning(f"Snapshot file not found at {SNAPSHOT_PATH}")
         return pd.DataFrame()
 
-    df = pd.read_csv(SNAPSHOT_PATH)
+    try:
+        df = pd.read_csv(SNAPSHOT_PATH)
+    except Exception as exc:
+        logger.warning(f"Failed to read snapshot file at {SNAPSHOT_PATH}: {exc}")
+        return pd.DataFrame()
+
     if df.empty:
         return df
+
+    # Strictly filter for real rows (is_sample == 0)
+    if "is_sample" in df.columns:
+        df = df[df["is_sample"] == 0]
+    if "source" in df.columns:
+        df = df[df["source"] != "sample"]
+
+    if df.empty:
+        logger.warning("Snapshot file contains no verified real rows (is_sample=0)")
+        return pd.DataFrame()
 
     # Filter commodity and date range
     mask = (df["commodity"] == commodity_name) & (df["arrival_date"] >= from_date) & (df["arrival_date"] <= to_date)
     filtered = df.loc[mask].copy()
-    filtered["source"] = "snapshot"
+    if not filtered.empty:
+        filtered["source"] = "snapshot"
+        filtered["is_sample"] = 0
     return filtered
 
 
@@ -179,15 +199,19 @@ def fetch_prices(
     timeout_seconds: float = 8.0,
     chunk_days: int = 30
 ) -> pd.DataFrame:
-    """Fetches commodity prices for Maharashtra across date range in 30-day chunks
-
-    with retry, timeout, schema normalization, IQR outlier removal, and fallback.
+    """Fetches commodity prices for Maharashtra across date range in 30-day chunks.
+    
+    If the package fails or returns nothing:
+    - Does NOT silently fall back to generated data.
+    - Only falls back to a real snapshot (is_sample=0 rows) if one exists.
+    - Otherwise returns the real error.
     """
     target_commodity = get_canonical_commodity_name(commodity)
     date_chunks = chunk_date_range(from_date, to_date, chunk_days=chunk_days)
     
     collected_frames: List[pd.DataFrame] = []
     live_success = False
+    last_error: Optional[Exception] = None
 
     # Attempt fetching using agmarknet package
     try:
@@ -211,10 +235,12 @@ def fetch_prices(
                         live_success = True
                     break
                 except Exception as exc:
+                    last_error = exc
                     logger.warning(f"Live agmarknet attempt {attempt + 1} failed for {chunk_start} to {chunk_end}: {exc}")
                     time.sleep(0.5)
 
     except Exception as exc:
+        last_error = exc
         logger.warning(f"Live agmarknet client unavailable: {exc}")
 
     # If live returned data, clean and return
@@ -222,7 +248,19 @@ def fetch_prices(
         merged = pd.concat(collected_frames, ignore_index=True)
         return clean_and_normalize(merged, target_commodity, source="live")
 
-    # Fallback route: read from local verified snapshot
-    logger.info(f"Falling back to verified offline snapshot for {target_commodity} ({from_date} to {to_date})")
+    # Fallback route: ONLY fall back to a real snapshot (is_sample=0) if one exists
     snapshot_df = fetch_from_snapshot(target_commodity, from_date, to_date)
-    return clean_and_normalize(snapshot_df, target_commodity, source="snapshot")
+    if not snapshot_df.empty:
+        logger.info(f"Falling back to verified real offline snapshot (is_sample=0) for {target_commodity} ({from_date} to {to_date})")
+        return clean_and_normalize(snapshot_df, target_commodity, source="snapshot")
+
+    # If agmarknet failed or returned nothing and NO real snapshot exists:
+    # Do NOT silently fall back to generated data. Return/raise the real error!
+    if last_error is not None:
+        error_msg = f"Agmarknet package failed for {target_commodity} ({from_date} to {to_date}): {last_error}"
+        logger.error(error_msg)
+        raise RuntimeError(error_msg) from last_error
+    else:
+        error_msg = f"Agmarknet package returned no data for {target_commodity} ({from_date} to {to_date}), and no verified real snapshot (is_sample=0) exists."
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)

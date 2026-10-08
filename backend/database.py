@@ -7,25 +7,56 @@ def init_db() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS mandi_prices (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                state TEXT NOT NULL,
-                district TEXT NOT NULL,
-                market TEXT NOT NULL,
-                commodity TEXT NOT NULL,
-                variety TEXT,
-                grade TEXT,
-                arrival_date TEXT NOT NULL,
-                min_price REAL NOT NULL,
-                max_price REAL NOT NULL,
-                modal_price REAL NOT NULL,
-                arrival_quantity REAL,
-                source TEXT NOT NULL DEFAULT 'snapshot' CHECK(source IN ('live', 'snapshot', 'sample')),
-                is_sample INTEGER DEFAULT 0,
-                fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        """)
+        # Check if table needs schema migration for manual_csv
+        cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='mandi_prices'")
+        tbl_info = cursor.fetchone()
+        if tbl_info and "'manual_csv'" not in tbl_info[0]:
+            cursor.execute("ALTER TABLE mandi_prices RENAME TO mandi_prices_old")
+            cursor.execute("""
+                CREATE TABLE mandi_prices (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    state TEXT NOT NULL,
+                    district TEXT NOT NULL,
+                    market TEXT NOT NULL,
+                    commodity TEXT NOT NULL,
+                    variety TEXT,
+                    grade TEXT,
+                    arrival_date TEXT NOT NULL,
+                    min_price REAL NOT NULL,
+                    max_price REAL NOT NULL,
+                    modal_price REAL NOT NULL,
+                    arrival_quantity REAL,
+                    source TEXT NOT NULL DEFAULT 'snapshot' CHECK(source IN ('live', 'snapshot', 'sample', 'manual_csv')),
+                    is_sample INTEGER DEFAULT 0,
+                    fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+            cursor.execute("""
+                INSERT INTO mandi_prices (id, state, district, market, commodity, variety, grade, arrival_date, min_price, max_price, modal_price, arrival_quantity, source, is_sample, fetched_at)
+                SELECT id, state, district, market, commodity, variety, grade, arrival_date, min_price, max_price, modal_price, arrival_quantity, source, is_sample, fetched_at
+                FROM mandi_prices_old;
+            """)
+            cursor.execute("DROP TABLE mandi_prices_old")
+        else:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS mandi_prices (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    state TEXT NOT NULL,
+                    district TEXT NOT NULL,
+                    market TEXT NOT NULL,
+                    commodity TEXT NOT NULL,
+                    variety TEXT,
+                    grade TEXT,
+                    arrival_date TEXT NOT NULL,
+                    min_price REAL NOT NULL,
+                    max_price REAL NOT NULL,
+                    modal_price REAL NOT NULL,
+                    arrival_quantity REAL,
+                    source TEXT NOT NULL DEFAULT 'snapshot' CHECK(source IN ('live', 'snapshot', 'sample', 'manual_csv')),
+                    is_sample INTEGER DEFAULT 0,
+                    fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
         cursor.execute("""
             CREATE UNIQUE INDEX IF NOT EXISTS uq_mandi_prices 
             ON mandi_prices(market, commodity, variety, arrival_date);
