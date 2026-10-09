@@ -24,6 +24,7 @@ class AdvisoryRequest(BaseModel):
 
 
 @router.post("/advise")
+@router.post("/advise/")
 def get_recommendation(payload: AdvisoryRequest):
     """Calculates net returns across candidate mandis for the selected crop,
 

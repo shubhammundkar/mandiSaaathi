@@ -368,6 +368,7 @@ async function fetchDataStatus(container) {
     state.dataStatus = status;
 
     const badgeContainer = container.querySelector('#data-status-badge');
+    if (badgeContainer) {
       const source = status.source || 'snapshot';
       const isSample = source === 'sample' || Boolean(status.is_sample);
       let badgeClass = 'badge-sky';

@@ -256,3 +256,15 @@ def test_vague_query_price_follow_up():
     assert ("crop" in data["reply"].lower() or "फसल" in data["reply"] or "पीक" in data["reply"])
 
 
+def test_chat_trailing_slash_tolerance():
+    """Verifies that both /api/chat and /api/chat/ succeed with 200 (no 405 Method Not Allowed)."""
+    msg = {"message": "Should I sell or store Onion in Lasalgaon?"}
+    res_no_slash = client.post("/api/chat", json=msg)
+    assert res_no_slash.status_code == 200
+    assert res_no_slash.json()["intent"] == "store_or_sell"
+
+    res_slash = client.post("/api/chat/", json=msg)
+    assert res_slash.status_code == 200
+    assert res_slash.json()["intent"] == "store_or_sell"
+
+

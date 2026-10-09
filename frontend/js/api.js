@@ -2,6 +2,18 @@
 
 const DEFAULT_TIMEOUT_MS = 12000;
 
+const getApiBase = () => {
+  if (typeof window !== 'undefined') {
+    if (window.MANDISAATHI_API_BASE) return window.MANDISAATHI_API_BASE;
+    // When served from Live Server or static tooling on port 5500/3000/5173, point to FastAPI backend on port 8000
+    const loc = window.location;
+    if (loc && (loc.port === '5500' || loc.port === '3000' || loc.port === '5173')) {
+      return `${loc.protocol}//${loc.hostname}:8000`;
+    }
+  }
+  return '';
+};
+
 class ApiClient {
   constructor() {
     this.activeRequests = 0;
@@ -26,8 +38,12 @@ class ApiClient {
     this.activeRequests += 1;
     this._notifyLoading();
 
+    const fullUrl = url.startsWith('http')
+      ? url
+      : `${getApiBase()}${url.startsWith('/') ? url : '/' + url}`;
+
     try {
-      const response = await fetch(url, {
+      const response = await fetch(fullUrl, {
         ...options,
         signal: controller.signal,
         headers: {

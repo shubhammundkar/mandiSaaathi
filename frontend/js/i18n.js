@@ -423,6 +423,8 @@ export function getLanguage() {
   return 'en';
 }
 
+export const getCurrentLanguage = getLanguage;
+
 export function setLanguage(lang) {
   if (['en', 'hi', 'mr'].includes(lang)) {
     localStorage.setItem(STORAGE_KEY, lang);

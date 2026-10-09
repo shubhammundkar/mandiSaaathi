@@ -26,6 +26,7 @@ class ChatResponse(BaseModel):
 
 
 @router.post("/chat", response_model=ChatResponse)
+@router.post("/chat/", response_model=ChatResponse)
 def handle_chat_message(payload: ChatRequest):
     """Processes user queries in English, Hindi, or Marathi.
 

@@ -37,6 +37,7 @@ class FarmerReportRequest(BaseModel):
 # -----------------------------------------------------------------------------
 
 @router.post("/alerts/subscribe")
+@router.post("/alerts/subscribe/")
 def api_subscribe_alert(payload: SubscribeRequest):
     """Subscribes a farmer to daily price alerts."""
     try:
@@ -108,6 +109,7 @@ def api_alert_preview(
 # -----------------------------------------------------------------------------
 
 @router.post("/farmer-reports")
+@router.post("/farmer-reports/")
 def api_submit_farmer_report(payload: FarmerReportRequest):
     """Submits a crowd-sourced transaction to farmer_reports with strict sanity checks.
     
