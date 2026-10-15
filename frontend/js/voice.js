@@ -1,6 +1,6 @@
 // Mandi Saathi - Voice Service (Web Speech API)
-// Implements SpeechRecognition (en-IN, hi-IN, mr-IN) with live transcript
-// and speechSynthesis with mute toggle, falling back to a hi-IN voice if no Marathi voice.
+// Implements SpeechRecognition (mr-IN, hi-IN, en-IN) with live transcript
+// and speechSynthesis with Marathi priority, Devanagari fallback, and mute control.
 
 const SpeechRecClass = window.SpeechRecognition || window.webkitSpeechRecognition || null;
 const MUTE_STORAGE_KEY = 'mandisaathi_voice_muted';
@@ -69,13 +69,13 @@ class VoiceService {
 
   // Helper: Map app language code ('en', 'hi', 'mr') to BCP 47 tag
   getBcp47Tag(lang) {
-    const clean = (lang || 'en').toLowerCase();
+    const clean = (lang || 'mr').toLowerCase();
     if (clean.startsWith('mr')) return 'mr-IN';
     if (clean.startsWith('hi')) return 'hi-IN';
     return 'en-IN';
   }
 
-  // Helper: Find appropriate speech synthesis voice with fallback
+  // Helper: Find appropriate speech synthesis voice with priority for Marathi
   getVoiceForLanguage(lang) {
     const bcpTag = this.getBcp47Tag(lang);
     if (!this.availableVoices.length && 'speechSynthesis' in window) {
@@ -87,33 +87,87 @@ class VoiceService {
 
     // 1. Marathi request
     if (bcpTag === 'mr-IN') {
-      // Direct Marathi voice
-      const mrVoice = voices.find((v) => v.lang.toLowerCase().replace('_', '-').startsWith('mr'));
+      // Direct Marathi voice (by language tag or name)
+      const mrVoice = voices.find((v) => {
+        const l = v.lang.toLowerCase().replace('_', '-');
+        const n = v.name.toLowerCase();
+        return l.startsWith('mr') || n.includes('marathi') || n.includes('मराठी') || n.includes('hemant');
+      });
       if (mrVoice) return mrVoice;
 
-      // Fallback: hi-IN voice if no Marathi voice is available in the browser/OS
-      const hiVoice = voices.find((v) => v.lang.toLowerCase().replace('_', '-').startsWith('hi'));
+      // High-quality Devanagari Hindi voice fallback (pronounced with identical Devanagari phonetics)
+      const hiVoice = voices.find((v) => {
+        const l = v.lang.toLowerCase().replace('_', '-');
+        const n = v.name.toLowerCase();
+        return l.startsWith('hi') || n.includes('hindi') || n.includes('हिन्दी') || n.includes('kalpana') || n.includes('swara');
+      });
       if (hiVoice) {
-        console.info('No mr-IN voice found in system; falling back to hi-IN voice:', hiVoice.name);
+        console.info('Using Devanagari voice for Marathi TTS:', hiVoice.name);
         return hiVoice;
       }
     }
 
     // 2. Hindi request
     if (bcpTag === 'hi-IN') {
-      const hiVoice = voices.find((v) => v.lang.toLowerCase().replace('_', '-').startsWith('hi'));
+      const hiVoice = voices.find((v) => {
+        const l = v.lang.toLowerCase().replace('_', '-');
+        const n = v.name.toLowerCase();
+        return l.startsWith('hi') || n.includes('hindi') || n.includes('हिन्दी');
+      });
       if (hiVoice) return hiVoice;
     }
 
     // 3. English or general fallback
-    const enVoice = voices.find((v) => v.lang.toLowerCase().replace('_', '-').startsWith('en-in') || v.lang.toLowerCase().startsWith('en'));
+    const enVoice = voices.find((v) => {
+      const l = v.lang.toLowerCase().replace('_', '-');
+      return l.startsWith('en-in') || l.startsWith('en');
+    });
     return enVoice || voices[0] || null;
+  }
+
+  // Helper: Get user-friendly error message in specified language
+  getLocalizedErrorMessage(errCode, lang = 'mr') {
+    if (lang === 'mr') {
+      switch (errCode) {
+        case 'not-allowed':
+        case 'permission-denied':
+          return 'मायक्रोफोन परवानगी मिळालेली नाही. कृपया ब्राऊझर सेटिंग्जमध्ये मायक्रोफोन सुरू करा किंवा खाली टाईप करा.';
+        case 'audio-capture':
+          return 'मायक्रोफोन आढळला नाही. कृपया माईक तपासा किंवा खाली टाईप करा.';
+        case 'network':
+          return 'इंटरनेट नेटवर्क अडचण आली आहे. कृपया इंटरनेट तपासा किंवा टाईप करा.';
+        case 'no-speech':
+          return 'काही आवाज ऐकू आला नाही. कृपया पुन्हा माईक दाबून बोला.';
+        default:
+          return 'आवाज ओळखण्यात अडचण आली. कृपया खाली टाईप करा.';
+      }
+    } else if (lang === 'hi') {
+      switch (errCode) {
+        case 'not-allowed':
+        case 'permission-denied':
+          return 'माइक्रोफ़ोन की अनुमति नहीं मिली। कृपया ब्राउज़र सेटिंग्स में अनुमति दें या नीचे टाइप करें।';
+        case 'no-speech':
+          return 'कोई आवाज़ सुनाई नहीं दी। कृपया फिर से बोलें।';
+        default:
+          return 'आवाज़ पहचानने में समस्या हुई। कृपया नीचे टाइप करें।';
+      }
+    } else {
+      switch (errCode) {
+        case 'not-allowed':
+        case 'permission-denied':
+          return 'Microphone permission denied. Please allow microphone access or type below.';
+        case 'no-speech':
+          return 'No speech detected. Please tap mic again to speak.';
+        default:
+          return 'Speech recognition error. You can type below.';
+      }
+    }
   }
 
   // --- Speech Recognition ---
 
   startListening({
-    lang = 'en',
+    lang = 'mr',
     onInterim = () => {},
     onFinal = () => {},
     onError = () => {},
@@ -121,7 +175,8 @@ class VoiceService {
     onEnd = () => {}
   } = {}) {
     if (!this.isRecognitionSupported()) {
-      onError({ error: 'not-supported', message: 'Speech recognition is not supported in this browser.' });
+      const errMsg = this.getLocalizedErrorMessage('not-supported', lang);
+      onError({ error: 'not-supported', message: errMsg });
       return false;
     }
 
@@ -166,7 +221,8 @@ class VoiceService {
       this.recognition.onerror = (event) => {
         this._isListening = false;
         console.warn('SpeechRecognition error:', event.error);
-        onError(event);
+        const friendlyMessage = this.getLocalizedErrorMessage(event.error, lang);
+        onError({ error: event.error, message: friendlyMessage });
       };
 
       this.recognition.onend = () => {
@@ -179,7 +235,8 @@ class VoiceService {
     } catch (err) {
       console.error('Failed to start SpeechRecognition:', err);
       this._isListening = false;
-      onError({ error: 'start-failure', message: err.message });
+      const friendlyMessage = this.getLocalizedErrorMessage('start-failure', lang);
+      onError({ error: 'start-failure', message: friendlyMessage });
       return false;
     }
   }
@@ -195,7 +252,7 @@ class VoiceService {
 
   // --- Speech Synthesis ---
 
-  speak(text, lang = 'en', { onStart = () => {}, onEnd = () => {}, onError = () => {} } = {}) {
+  speak(text, lang = 'mr', { onStart = () => {}, onEnd = () => {}, onError = () => {} } = {}) {
     if (!this.isSynthesisSupported()) {
       onError({ error: 'not-supported', message: 'Speech synthesis not supported.' });
       return;
@@ -209,13 +266,21 @@ class VoiceService {
 
     this.stopSpeaking();
 
-    // Clean markdown asterisks, hashes, and formatting for clean voice reading
-    const cleanText = text
+    // Clean text and translate symbols into natural spoken Marathi
+    let cleanText = text
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/\*(.*?)\*/g, '$1')
       .replace(/#+\s+/g, '')
       .replace(/[•\-\*]\s+/g, '')
-      .replace(/₹/g, 'रुपये ')
+      .replace(/-₹/g, ' वजा रुपये ')
+      .replace(/\+₹/g, ' अधिक रुपये ')
+      .replace(/₹/g, ' रुपये ')
+      .replace(/\/क्विंटल|\/q|\/ क्विंटल/g, ' प्रति क्विंटल ')
+      .replace(/किमी/g, ' किलोमीटर ')
+      .replace(/%/g, ' टक्के ')
+      .replace(/[\(\)]/g, ' ')
+      .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '') // Remove emojis
+      .replace(/\s+/g, ' ')
       .trim();
 
     if (!cleanText) {
@@ -228,7 +293,8 @@ class VoiceService {
       const voice = this.getVoiceForLanguage(lang);
 
       const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.lang = bcpTag;
+      // Ensure utterance.lang matches the voice language to prevent browser speech rejection
+      utterance.lang = voice && voice.lang ? voice.lang : bcpTag;
       if (voice) {
         utterance.voice = voice;
       }

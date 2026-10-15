@@ -658,8 +658,12 @@ function renderResults(container) {
 
   const isLocal = best.is_nearest || best.gain_vs_nearest_per_quintal <= 0;
   const gainText = best.gain_vs_nearest_per_quintal > 0
-    ? `+₹${best.gain_vs_nearest_per_quintal.toFixed(2)}/q extra`
-    : `Local Nearest Market`;
+    ? `+₹${best.gain_vs_nearest_per_quintal.toFixed(2)}/q (${t('results_gain_vs_nearest')})`
+    : t('results_local_nearest');
+
+  const confText = best.confidence === 'HIGH' 
+    ? t('results_confidence_high') 
+    : (best.confidence === 'MEDIUM' ? t('results_confidence_medium') : t('results_confidence_low'));
 
   // Combine top recommendation and comparison list for ranked cards
   const allRanked = [best, ...(res.comparisons || [])];
@@ -677,10 +681,10 @@ function renderResults(container) {
               <span data-i18n="results_hero_title">${t('results_hero_title')}</span>
             </span>
             <span class="badge ${best.confidence === 'HIGH' ? 'badge-green' : best.confidence === 'MEDIUM' ? 'badge-sky' : 'badge-yellow'}">
-              ${best.confidence} Confidence
+              ${confText}
             </span>
             ${getFreshnessBadge(best.days_ago, best.arrival_date)}
-            ${best.missed_cutoff ? `<span class="badge badge-peach">Auction Day+1</span>` : `<span class="badge badge-green">Today's Auction</span>`}
+            ${best.missed_cutoff ? `<span class="badge badge-peach">${t('results_auction_next')}</span>` : `<span class="badge badge-green">${t('results_auction_today')}</span>`}
           </div>
           <h2 style="font-size: clamp(1.4rem, 5vw, 2.2rem); font-weight: 700; color: var(--text); margin: 4px 0; word-break: break-word;">
             ${best.market} <span style="font-size: clamp(0.95rem, 3.5vw, 1.15rem); font-weight: 500; color: var(--muted);">(${best.district} District)</span>
@@ -713,7 +717,7 @@ function renderResults(container) {
             ₹${best.total_net_earnings.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </div>
           <div style="font-size: 0.8rem; color: var(--muted); margin-top: 4px;">
-            For your ${state.quantity} quintals batch
+            ${state.quantity} q • ${t('results_batch_qty')}
           </div>
         </div>
       </div>
@@ -732,19 +736,19 @@ function renderResults(container) {
           <div style="font-weight: 600; font-size: 0.95rem;">₹${best.gross_modal_price.toFixed(2)}</div>
         </div>
         <div style="background: #FFFFFF; padding: 10px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
-          <div style="color: var(--muted); font-size: 0.75rem;">Transport / q</div>
+          <div style="color: var(--muted); font-size: 0.75rem;" data-i18n="results_transport_deduction">${t('results_transport_deduction')}</div>
           <div style="font-weight: 600; font-size: 0.95rem; color: #C62828;">-₹${best.costs.transport_per_q.toFixed(2)}</div>
         </div>
         <div style="background: #FFFFFF; padding: 10px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
-          <div style="color: var(--muted); font-size: 0.75rem;">Fees & Labor</div>
+          <div style="color: var(--muted); font-size: 0.75rem;" data-i18n="results_fees_labor">${t('results_fees_labor')}</div>
           <div style="font-weight: 600; font-size: 0.95rem; color: #C62828;">-₹${(best.costs.loading_unloading_per_q + best.costs.market_fee_per_q).toFixed(2)}</div>
         </div>
         <div style="background: #FFFFFF; padding: 10px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
-          <div style="color: var(--muted); font-size: 0.75rem;">Distance</div>
+          <div style="color: var(--muted); font-size: 0.75rem;" data-i18n="results_distance">${t('results_distance')}</div>
           <div style="font-weight: 600; font-size: 0.95rem;">${best.distance_km} km</div>
         </div>
         <div style="background: #FFFFFF; padding: 10px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
-          <div style="color: var(--muted); font-size: 0.75rem;">Arrival</div>
+          <div style="color: var(--muted); font-size: 0.75rem;" data-i18n="results_arrival">${t('results_arrival')}</div>
           <div style="font-weight: 600; font-size: 0.95rem;">${best.arrival_time}</div>
         </div>
       </div>

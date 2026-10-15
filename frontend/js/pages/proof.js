@@ -26,14 +26,13 @@ export async function render(container) {
       <!-- Page Header -->
       <div style="margin-bottom: 28px; text-align: center;">
         <span class="badge badge-green" style="margin-bottom: 8px;">
-          <i data-lucide="scale" style="width: 14px; height: 14px;"></i> Empirical Proof & Mathematical Transparency
+          <i data-lucide="scale" style="width: 14px; height: 14px;"></i> <span data-i18n="proof_hero_badge">${t('proof_hero_badge')}</span>
         </span>
-        <h1 style="font-size: 1.85rem; font-weight: 700; color: var(--text); margin-bottom: 8px;">
-          Backtest Proof & Calculation Logic
+        <h1 style="font-size: 1.85rem; font-weight: 700; color: var(--text); margin-bottom: 8px;" data-i18n="proof_heading">
+          ${t('proof_heading')}
         </h1>
-        <p style="color: var(--muted); font-size: 0.95rem; max-width: 700px; margin: 0 auto;">
-          Strictly leak-free simulation over the historical record across 23 Maharashtra APMC markets.
-          See real empirical alpha, cumulative returns, worse days, and step-by-step mathematical formulas.
+        <p style="color: var(--muted); font-size: 0.95rem; max-width: 700px; margin: 0 auto;" data-i18n="proof_subheading">
+          ${t('proof_subheading')}
         </p>
       </div>
 
@@ -41,10 +40,10 @@ export async function render(container) {
       <div class="card" style="margin-bottom: 24px;">
         <div class="card-title" style="font-size: 1.05rem;">
           <i data-lucide="sliders" style="width: 18px; height: 18px; color: var(--primary);"></i>
-          Simulate Historical Backtest
+          <span data-i18n="proof_controls_title">${t('proof_controls_title')}</span>
         </div>
-        <div class="card-subtitle">
-          Test how Mandi Saathi would have performed on every trading day versus always selling at the nearest local APMC.
+        <div class="card-subtitle" data-i18n="proof_controls_subtitle">
+          ${t('proof_controls_subtitle')}
         </div>
 
         <form id="backtest-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; align-items: end; margin-top: 14px;">

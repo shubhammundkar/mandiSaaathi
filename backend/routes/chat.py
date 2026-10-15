@@ -1,10 +1,13 @@
 """Chat route handling multilingual voice & text queries for APMC price advice."""
 
+import logging
 from typing import Any, Dict, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from backend.services.nlp_service import process_chat_message
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["Chat & NLP"])
 
@@ -38,11 +41,16 @@ def handle_chat_message(payload: ChatRequest):
     if not clean_msg:
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
 
+    logger.info(f"[CHAT_REQUEST] session_id={payload.session_id} lang={payload.language} chars={len(clean_msg)}")
     try:
         result = process_chat_message(
             message=clean_msg,
-            explicit_language=payload.language
+            explicit_language=payload.language,
+            session_id=payload.session_id
         )
+        logger.info(f"[CHAT_SUCCESS] session_id={payload.session_id} intent={result.get('intent')} crop={result.get('entities', {}).get('crop')} follow_up={result.get('follow_up_needed')}")
         return result
     except Exception as exc:
+        logger.error(f"[CHAT_ERROR] session_id={payload.session_id} failed: {exc}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Chat processing error: {str(exc)}")
+

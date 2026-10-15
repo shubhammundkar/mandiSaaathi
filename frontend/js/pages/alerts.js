@@ -40,26 +40,26 @@ export async function render(container) {
       <!-- Page Header -->
       <div style="margin-bottom: 24px; text-align: center;">
         <span class="badge badge-green" style="margin-bottom: 8px;">
-          <i data-lucide="bell" style="width: 14px; height: 14px;"></i> Alerts & Community Intelligence
+          <i data-lucide="bell" style="width: 14px; height: 14px;"></i> <span data-i18n="alerts_hero_badge">${t('alerts_hero_badge')}</span>
         </span>
-        <h1 style="font-size: 1.85rem; font-weight: 700; color: var(--text); margin-bottom: 8px;">
-          Mandi Alerts, Farmer Reports & Data Quality
+        <h1 style="font-size: 1.85rem; font-weight: 700; color: var(--text); margin-bottom: 8px;" data-i18n="alerts_heading">
+          ${t('alerts_heading')}
         </h1>
-        <p style="color: var(--muted); font-size: 0.95rem; max-width: 650px; margin: 0 auto;">
-          Get daily morning WhatsApp market alerts, log actual crop sales, and inspect real-time reporting coverage across 23 Maharashtra APMC markets.
+        <p style="color: var(--muted); font-size: 0.95rem; max-width: 650px; margin: 0 auto;" data-i18n="alerts_subheading">
+          ${t('alerts_subheading')}
         </p>
       </div>
 
       <!-- Segmented Tab Navigation -->
       <div class="alerts-tab-bar" role="tablist">
         <button class="alerts-tab-btn ${activeTab === 'alerts' ? 'active' : ''}" data-tab="alerts">
-          <i data-lucide="bell" style="width: 16px; height: 16px;"></i> Daily Alerts & WhatsApp Preview
+          <i data-lucide="bell" style="width: 16px; height: 16px;"></i> <span data-i18n="alerts_tab_daily">${t('alerts_tab_daily')}</span>
         </button>
         <button class="alerts-tab-btn ${activeTab === 'sold' ? 'active' : ''}" data-tab="sold">
-          <i data-lucide="badge-percent" style="width: 16px; height: 16px;"></i> "I Sold Today" (Farmer Reports)
+          <i data-lucide="badge-percent" style="width: 16px; height: 16px;"></i> <span data-i18n="alerts_tab_sold">${t('alerts_tab_sold')}</span>
         </button>
         <button class="alerts-tab-btn ${activeTab === 'quality' ? 'active' : ''}" data-tab="quality">
-          <i data-lucide="activity" style="width: 16px; height: 16px;"></i> Mandi Data Quality
+          <i data-lucide="activity" style="width: 16px; height: 16px;"></i> <span data-i18n="alerts_tab_quality">${t('alerts_tab_quality')}</span>
         </button>
       </div>
 

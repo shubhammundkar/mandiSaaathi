@@ -4,11 +4,30 @@ const DEFAULT_TIMEOUT_MS = 12000;
 
 const getApiBase = () => {
   if (typeof window !== 'undefined') {
-    if (window.MANDISAATHI_API_BASE) return window.MANDISAATHI_API_BASE;
-    // When served from Live Server or static tooling on port 5500/3000/5173, point to FastAPI backend on port 8000
+    // 1. Explicit global override (window.MANDISAATHI_API_BASE)
+    if (window.MANDISAATHI_API_BASE) {
+      return String(window.MANDISAATHI_API_BASE).replace(/\/+$/, '');
+    }
+
+    // 2. Local storage override (user or settings can set)
+    try {
+      const stored = localStorage.getItem('mandisaathi_api_url');
+      if (stored) return stored.replace(/\/+$/, '');
+    } catch (_) {}
+
     const loc = window.location;
-    if (loc && (loc.port === '5500' || loc.port === '3000' || loc.port === '5173')) {
-      return `${loc.protocol}//${loc.hostname}:8000`;
+    if (loc) {
+      // 3. Local file protocol (double clicked index.html): file:///
+      if (loc.protocol === 'file:') {
+        return 'http://127.0.0.1:8000';
+      }
+
+      // 4. Any separate frontend dev server (e.g. Live Server on 5500, 5501, 3000, 5173, 8080, etc.)
+      const isLocalHost = loc.hostname === 'localhost' || loc.hostname === '127.0.0.1' || loc.hostname === '[::1]';
+      if (isLocalHost && loc.port && loc.port !== '8000') {
+        const proto = loc.protocol === 'https:' ? 'https:' : 'http:';
+        return `${proto}//${loc.hostname}:8000`;
+      }
     }
   }
   return '';
@@ -76,6 +95,12 @@ class ApiClient {
         timeoutError.isTimeout = true;
         throw timeoutError;
       }
+      if (err.message && err.message.toLowerCase().includes('failed to fetch')) {
+        const networkError = new Error('Failed to fetch');
+        networkError.isNetworkError = true;
+        networkError.targetUrl = fullUrl;
+        throw networkError;
+      }
       throw err;
     } finally {
       clearTimeout(timeoutId);
@@ -83,6 +108,8 @@ class ApiClient {
       this._notifyLoading();
     }
   }
+
+
 
   // --- API Endpoints ---
 

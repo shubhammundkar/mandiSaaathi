@@ -7,13 +7,13 @@ export function render(container) {
       <!-- Hero Header -->
       <div style="margin-bottom: 32px; text-align: center;">
         <span class="badge badge-green" style="margin-bottom: 10px;">
-          <i data-lucide="sprout" style="width: 14px; height: 14px;"></i> VORTEX 2K26 • Climate, Agriculture & Rural Innovation
+          <i data-lucide="sprout" style="width: 14px; height: 14px;"></i> <span data-i18n="about_hero_badge">${t('about_hero_badge')}</span>
         </span>
-        <h1 style="font-size: 2rem; font-weight: 700; color: var(--text); margin-bottom: 8px;">
-          About Mandi Saathi (मंडी साथी)
+        <h1 style="font-size: 2rem; font-weight: 700; color: var(--text); margin-bottom: 8px;" data-i18n="about_heading">
+          ${t('about_heading')}
         </h1>
-        <p style="color: var(--muted); font-size: 1rem; max-width: 680px; margin: 0 auto; line-height: 1.5;">
-          An AI-powered market co-pilot protecting Indian farmers from the headline price trap through transparent net-in-pocket math and sell-timing intelligence.
+        <p style="color: var(--muted); font-size: 1rem; max-width: 680px; margin: 0 auto; line-height: 1.5;" data-i18n="about_subheading">
+          ${t('about_subheading')}
         </p>
       </div>
 
@@ -21,7 +21,7 @@ export function render(container) {
       <div class="card" style="margin-bottom: 24px; padding: 24px;">
         <div class="card-title" style="font-size: 1.2rem; color: #C62828;">
           <i data-lucide="alert-octagon" style="width: 22px; height: 22px; color: #D32F2F;"></i>
-          The Problem: The "Headline Price Trap"
+          <span data-i18n="about_problem_title">${t('about_problem_title')}</span>
         </div>
         <div style="color: var(--text); font-size: 0.95rem; line-height: 1.6; display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
           <p>
@@ -43,7 +43,7 @@ export function render(container) {
       <div class="card" style="margin-bottom: 24px; padding: 24px;">
         <div class="card-title" style="font-size: 1.2rem;">
           <i data-lucide="layers" style="width: 22px; height: 22px; color: var(--primary);"></i>
-          How It Works: 4-Step Decision Architecture
+          <span data-i18n="about_how_it_works_title">${t('about_how_it_works_title')}</span>
         </div>
         <div class="card-subtitle">
           From open government data ingestion to real-time net return ranking and time-series sell-timing advisory.

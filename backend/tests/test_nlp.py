@@ -268,3 +268,216 @@ def test_chat_trailing_slash_tolerance():
     assert res_slash.json()["intent"] == "store_or_sell"
 
 
+# =============================================================================
+# Marathi Complete Voice Conversation Tests
+# =============================================================================
+
+def test_marathi_natural_speech_best_market():
+    """Verifies natural colloquial Marathi query: 'माझा २० क्विंटल टोमॅटो आहे, कुठे विकू?'."""
+    res = client.post("/api/chat", json={
+        "message": "पुण्यात माझा २० क्विंटल टोमॅटो आहे, कुठे विकू?",
+        "language": "mr"
+    })
+    assert res.status_code == 200
+    data = res.json()
+
+    assert data["language"] == "mr"
+    assert data["intent"] == "best_market"
+    assert data["entities"]["crop"] == "Tomato"
+    assert data["entities"]["quantity"] == 20.0
+    assert data["entities"]["location"] == "Pune"
+    assert data["follow_up_needed"] is False
+
+    # Response must be in Marathi Devanagari with real economics
+    reply = data["reply"]
+    assert "टोमॅटो" in reply
+    assert "₹" in reply
+    assert "निव्वळ नफा" in reply
+    assert "वाहतूक खर्च" in reply
+    assert "सल्ला:" in reply
+    # No English leaks
+    assert "Sell locally" not in reply
+    assert "Gross Mandi Price" not in reply
+
+
+def test_marathi_natural_speech_price_check():
+    """Verifies natural colloquial Marathi query: 'पुण्यात टोमॅटोचा आजचा भाव काय आहे?'."""
+    res = client.post("/api/chat", json={
+        "message": "पुण्यात टोमॅटोचा आजचा भाव काय आहे?",
+        "language": "mr"
+    })
+    assert res.status_code == 200
+    data = res.json()
+
+    assert data["language"] == "mr"
+    assert data["intent"] == "price_check"
+    assert data["entities"]["crop"] == "Tomato"
+    assert data["entities"]["location"] == "Pune"
+    assert data["follow_up_needed"] is False
+
+    reply = data["reply"]
+    assert "टोमॅटो" in reply
+    assert "₹" in reply
+    assert "सरासरी (मॉडेल) भाव" in reply or "किमान भाव" in reply
+    assert "Agmarknet" in reply
+
+
+def test_marathi_natural_speech_store_or_sell():
+    """Verifies natural colloquial Marathi query: 'माझ्याकडे कांदा आहे, आता विकू की साठवून ठेवू?'."""
+    res = client.post("/api/chat", json={
+        "message": "लासलगावमध्ये माझ्याकडे कांदा आहे, आता विकू की साठवून ठेवू?",
+        "language": "mr"
+    })
+    assert res.status_code == 200
+    data = res.json()
+
+    assert data["language"] == "mr"
+    assert data["intent"] == "store_or_sell"
+    assert data["entities"]["crop"] == "Onion"
+    assert data["follow_up_needed"] is False
+
+    reply = data["reply"]
+    assert "कांदा" in reply
+    assert "₹" in reply
+    assert "शिफारस:" in reply
+    assert "विश्लेषण:" in reply
+    # Must not contain English "(Sell now)" or English rationale
+    assert "(Sell now)" not in reply
+    assert "Holding for" not in reply
+
+
+def test_marathi_multi_turn_conversation_with_context():
+    """Verifies multi-turn contextual conversation where session state is preserved across turns.
+
+    Turn 1: "मला २० क्विंटल माल विकायचा आहे, कुठे नेऊ?" -> AI asks for crop in Marathi.
+    Turn 2: "टोमॅटो" -> AI remembers quantity=20 and asks for location in Marathi.
+    Turn 3: "पुणे" -> AI has crop=Tomato, quantity=20, location=Pune and gives full best market recommendation.
+    Turn 4: "आणि नाशिकचा काय भाव आहे?" -> AI maintains crop=Tomato, updates location=Nashik, intent=price_check.
+    Turn 5: "साठवून ठेवू का?" -> AI maintains crop=Tomato and gives storage advice in Marathi.
+    Turn 6: "धन्यवाद" -> AI responds warmly in Marathi.
+    """
+    session_id = "test-session-marathi-101"
+
+    # Turn 1: Missing crop
+    res1 = client.post("/api/chat", json={
+        "message": "मला २० क्विंटल माल विकायचा आहे, कुठे नेऊ?",
+        "session_id": session_id,
+        "language": "mr"
+    })
+    assert res1.status_code == 200
+    d1 = res1.json()
+    assert d1["language"] == "mr"
+    assert d1["follow_up_needed"] is True
+    assert d1["missing_field"] == "crop"
+    assert "कोणत्या पिकासाठी" in d1["reply"]
+
+    # Turn 2: User provides crop
+    res2 = client.post("/api/chat", json={
+        "message": "टोमॅटो",
+        "session_id": session_id,
+        "language": "mr"
+    })
+    assert res2.status_code == 200
+    d2 = res2.json()
+    assert d2["language"] == "mr"
+    assert d2["follow_up_needed"] is True
+    assert d2["missing_field"] == "location"
+    assert d2["entities"]["crop"] == "Tomato"
+    assert d2["entities"]["quantity"] == 20.0
+    assert "कोणत्या जिल्ह्यातून" in d2["reply"]
+
+    # Turn 3: User provides location
+    res3 = client.post("/api/chat", json={
+        "message": "पुणे",
+        "session_id": session_id,
+        "language": "mr"
+    })
+    assert res3.status_code == 200
+    d3 = res3.json()
+    assert d3["language"] == "mr"
+    assert d3["follow_up_needed"] is False
+    assert d3["entities"]["crop"] == "Tomato"
+    assert d3["entities"]["quantity"] == 20.0
+    assert d3["entities"]["location"] == "Pune"
+    assert "निव्वळ नफा" in d3["reply"]
+    assert "₹" in d3["reply"]
+
+    # Turn 4: Contextual follow-up for different location price
+    res4 = client.post("/api/chat", json={
+        "message": "आणि नाशिकचा काय भाव आहे?",
+        "session_id": session_id,
+        "language": "mr"
+    })
+    assert res4.status_code == 200
+    d4 = res4.json()
+    assert d4["language"] == "mr"
+    assert d4["entities"]["crop"] == "Tomato"
+    assert d4["entities"]["location"] == "Nashik"
+    assert "नाशिक" in d4["reply"] or "Nashik" in str(d4["data"])
+
+    # Turn 5: Contextual follow-up for storage
+    res5 = client.post("/api/chat", json={
+        "message": "साठवून ठेवू का?",
+        "session_id": session_id,
+        "language": "mr"
+    })
+    assert res5.status_code == 200
+    d5 = res5.json()
+    assert d5["language"] == "mr"
+    assert d5["intent"] == "store_or_sell"
+    assert d5["entities"]["crop"] == "Tomato"
+    assert "नाशवंत" in d5["reply"] or "साठवणूक" in d5["reply"]
+
+    # Turn 6: Gratitude
+    res6 = client.post("/api/chat", json={
+        "message": "धन्यवाद",
+        "session_id": session_id,
+        "language": "mr"
+    })
+    assert res6.status_code == 200
+    d6 = res6.json()
+    assert d6["language"] == "mr"
+    assert "स्वागत" in d6["reply"]
+
+
+def test_marathi_word_numbers_and_units():
+    """Verifies that Marathi number words and agricultural units (पोती, टन, गाडी) are parsed."""
+    # 50 poti = 25 quintals
+    res1 = client.post("/api/chat", json={
+        "message": "पुण्यात पन्नास पोती कांदा कुठे विकू?",
+        "language": "mr"
+    })
+    assert res1.status_code == 200
+    assert res1.json()["entities"]["crop"] == "Onion"
+    assert res1.json()["entities"]["quantity"] == 25.0
+    assert res1.json()["entities"]["location"] == "Pune"
+
+    # 2 ton = 20 quintals
+    res2 = client.post("/api/chat", json={
+        "message": "लातूरला २ टन सोयाबीन नेऊ का?",
+        "language": "mr"
+    })
+    assert res2.status_code == 200
+    assert res2.json()["entities"]["crop"] == "Soybean"
+    assert res2.json()["entities"]["quantity"] == 20.0
+    assert res2.json()["entities"]["location"] == "Latur"
+
+
+def test_marathi_greetings_and_identity():
+    """Verifies greeting ('नमस्कार') and identity ('तू कोण आहेस')."""
+    res_greet = client.post("/api/chat", json={
+        "message": "नमस्कार",
+        "language": "mr"
+    })
+    assert res_greet.status_code == 200
+    assert "नमस्कार शेतकरी मित्र" in res_greet.json()["reply"]
+
+    res_who = client.post("/api/chat", json={
+        "message": "तू कोण आहेस?",
+        "language": "mr"
+    })
+    assert res_who.status_code == 200
+    assert "मंडी साथी" in res_who.json()["reply"]
+
+
+

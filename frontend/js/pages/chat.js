@@ -34,15 +34,11 @@ export function render(container) {
   const isSpeechRecSupported = voice.isRecognitionSupported();
   const isMuted = voice.isMuted();
 
-  // Set default welcome message if first message has no text yet
-  if (!state.messages[0].text) {
-    if (currentLang === 'mr') {
-      state.messages[0].text = "नमस्कार शेतकरी मित्रांनो! मी **मंडी साथी** आहे. तुम्हाला कोणत्या पिकाचे बाजारभाव, विक्रीसाठी सर्वोत्तम मंडी किंवा साठवणुकीचा सल्ला हवा आहे? खालील बटण दाबून बोला किंवा लिहा.";
-    } else if (currentLang === 'hi') {
-      state.messages[0].text = "नमस्ते किसान भाइयो! मैं **मंडी साथी** हूँ। आपको किस फसल का मंडी भाव, सबसे अच्छी बिक्री मंडी या भंडारण सलाह चाहिए? बोलकर या लिखकर पूछें।";
-    } else {
-      state.messages[0].text = "Hello farmer friends! I am **Mandi Saathi**. Ask me about the best mandi to sell your harvest, today's prices, or storage timing. Speak or type below!";
-    }
+  // Set default welcome message if first message has no text yet or if switching language with only welcome message
+  if (!state.messages[0].text || state.messages[0].isWelcome || state.messages.length === 1) {
+    state.messages[0].isWelcome = true;
+    state.messages[0].text = t('chat_welcome');
+    state.messages[0].language = currentLang;
   }
 
   container.innerHTML = `
@@ -126,18 +122,19 @@ export function render(container) {
             id="chat-input" 
             class="input" 
             placeholder="${t('chat_input_placeholder')}" 
+            data-i18n-placeholder="chat_input_placeholder"
             autocomplete="off"
             style="min-height: 46px; border-radius: var(--radius-pill); font-size: 0.95rem; padding: 8px 18px;"
           />
           
           <!-- Send Button -->
-          <button type="submit" class="btn btn-primary" id="btn-send-chat" style="width: 46px; height: 46px; min-width: 46px; padding: 0; border-radius: 50%;" title="Send">
+          <button type="submit" class="btn btn-primary" id="btn-send-chat" style="width: 46px; height: 46px; min-width: 46px; padding: 0; border-radius: 50%;" title="${t('btn_speak')}">
             <i data-lucide="send" style="width: 18px; height: 18px;"></i>
           </button>
 
           <!-- Large Mic Button with Pulse Animation -->
           ${isSpeechRecSupported ? `
-            <button type="button" class="btn-mic ${state.isRecording ? 'recording' : ''}" id="btn-voice-mic" title="Voice Search (Marathi / Hindi / English)">
+            <button type="button" class="btn-mic ${state.isRecording ? 'recording' : ''}" id="btn-voice-mic" title="${t('chat_mic_title')}" data-i18n-title="chat_mic_title">
               <i data-lucide="${state.isRecording ? 'square' : 'mic'}" style="width: 22px; height: 22px;"></i>
             </button>
           ` : ''}
@@ -164,6 +161,7 @@ function renderMessagesHtml(messages) {
   return messages.map((msg) => {
     const isUser = msg.sender === 'user';
     const formattedText = formatMessageText(msg.text);
+    const msgLang = msg.language || 'mr';
 
     return `
       <div class="chat-message-row ${isUser ? 'user' : 'bot'}">
@@ -173,10 +171,20 @@ function renderMessagesHtml(messages) {
           <!-- Embedded Mini Result Card (If bot message contains structured engine data) -->
           ${!isUser && msg.data ? renderMiniResultCard(msg.data, msg.intent) : ''}
 
+          <!-- Retry button on connection error -->
+          ${!isUser && msg.isError && msg.retryText ? `
+            <div style="margin-top: 8px;">
+              <button type="button" class="btn-chat-retry" data-retry="${escapeAttr(msg.retryText)}" style="background: var(--red-soft, #FFEBEE); border: 1px solid #FFCDD2; color: #C62828; border-radius: 4px; padding: 4px 10px; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;">
+                <i data-lucide="rotate-cw" style="width: 12px; height: 12px;"></i>
+                <span>${t('btn_retry')}</span>
+              </button>
+            </div>
+          ` : ''}
+
           <!-- Bubble Meta: Time & Voice Re-play -->
           <div class="chat-bubble-meta">
-            ${!isUser ? `
-              <button type="button" class="btn-bubble-listen" data-text="${escapeAttr(msg.text)}" style="background: none; border: none; cursor: pointer; color: #667781; display: inline-flex; align-items: center; margin-right: 6px;" title="Listen to message">
+            ${!isUser && !msg.isThinking && !msg.isError ? `
+              <button type="button" class="btn-bubble-listen" data-text="${escapeAttr(msg.text)}" data-lang="${msgLang}" style="background: none; border: none; cursor: pointer; color: #667781; display: inline-flex; align-items: center; margin-right: 6px;" title="${t('btn_listen')}">
                 <i data-lucide="volume-2" style="width: 14px; height: 14px;"></i>
               </button>
             ` : ''}
@@ -213,7 +221,7 @@ function renderMiniResultCard(data, intent) {
       <div class="chat-mini-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
           <div style="display: flex; align-items: center; gap: 6px;">
-            <span class="badge badge-green" style="font-size: 0.72rem; padding: 2px 8px;">Top Choice</span>
+            <span class="badge badge-green" style="font-size: 0.72rem; padding: 2px 8px;">${t('chat_card_top_choice')}</span>
             <strong style="color: var(--text);">${b.market}</strong>
             <span style="font-size: 0.8rem; color: var(--muted);">(${b.district})</span>
           </div>
@@ -223,10 +231,10 @@ function renderMiniResultCard(data, intent) {
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.8rem; margin: 8px 0; background: #FFFFFF; padding: 8px; border-radius: 6px; border: 1px solid var(--border);">
-          <div>Gross: <strong>₹${b.gross_modal_price.toFixed(0)}</strong></div>
-          <div>Freight: <strong style="color: #C62828;">-₹${b.costs.transport_per_q.toFixed(2)}</strong></div>
-          <div>Total Profit: <strong style="color: #2E7D32;">₹${b.total_net_earnings.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</strong></div>
-          <div>Distance: <strong>${b.distance_km} km</strong></div>
+          <div>${t('chat_card_gross')}: <strong>₹${b.gross_modal_price.toFixed(0)}</strong></div>
+          <div>${t('chat_card_freight')}: <strong style="color: #C62828;">-₹${b.costs.transport_per_q.toFixed(2)}</strong></div>
+          <div>${t('chat_card_total_profit')}: <strong style="color: #2E7D32;">₹${b.total_net_earnings.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</strong></div>
+          <div>${t('chat_card_distance')}: <strong>${b.distance_km} km</strong></div>
         </div>
 
         <a href="#/advisor" class="btn btn-primary" style="width: 100%; height: 34px; font-size: 0.82rem; padding: 0;" data-i18n="chat_view_in_advisor">
@@ -246,7 +254,7 @@ function renderMiniResultCard(data, intent) {
             ${data.recommendation}
           </span>
           <span style="font-size: 0.82rem; font-weight: 600;">
-            Current: ₹${(data.current_price || 0).toFixed(0)}/q
+            ${t('chat_card_current')}: ₹${(data.current_price || 0).toFixed(0)}/q
           </span>
         </div>
         <p style="font-size: 0.82rem; color: var(--muted); margin: 4px 0 0;">
@@ -267,9 +275,9 @@ function renderMiniResultCard(data, intent) {
           </span>
         </div>
         <div style="display: flex; gap: 12px; font-size: 0.78rem; color: var(--muted);">
-          <span>Min: ₹${(data.min_price || 0).toFixed(0)}</span>
-          <span>Max: ₹${(data.max_price || 0).toFixed(0)}</span>
-          <span>Date: ${data.arrival_date || 'Today'}</span>
+          <span>${t('chat_card_min')}: ₹${(data.min_price || 0).toFixed(0)}</span>
+          <span>${t('chat_card_max')}: ₹${(data.max_price || 0).toFixed(0)}</span>
+          <span>${t('chat_card_date')}: ${data.arrival_date || t('chat_card_today')}</span>
         </div>
       </div>
     `;
@@ -330,7 +338,7 @@ function bindEvents(container) {
         if (window.lucide) window.lucide.createIcons();
       }
       if (window.showToast) {
-        window.showToast(nowMuted ? 'Voice speech muted' : 'Voice speech unmuted', 'info');
+        window.showToast(nowMuted ? t('chat_voice_muted_toast') : t('chat_voice_unmuted_toast'), 'info');
       }
     });
   }
@@ -344,7 +352,7 @@ function bindEvents(container) {
         setRecordingState(false, container);
       } else {
         // Start speech recognition in current language (mr-IN, hi-IN, en-IN)
-        const lang = getLanguage();
+        const lang = getLanguage() || 'mr';
         setRecordingState(true, container);
 
         voice.startListening({
@@ -365,7 +373,7 @@ function bindEvents(container) {
           onError: (err) => {
             setRecordingState(false, container);
             if (err.error !== 'no-speech' && window.showToast) {
-              window.showToast(`Microphone notice: ${err.error || 'speech failed'}`, 'info');
+              window.showToast(err.message || t('chat_mic_perm_error'), 'info');
             }
           },
           onEnd: () => {
@@ -377,14 +385,7 @@ function bindEvents(container) {
   }
 
   // Re-listen audio buttons on bot bubbles
-  container.querySelectorAll('.btn-bubble-listen').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const rawText = btn.getAttribute('data-text');
-      if (rawText) {
-        voice.speak(rawText, getLanguage());
-      }
-    });
-  });
+  bindBubbleEvents(container);
 }
 
 function setRecordingState(isRec, container) {
@@ -446,19 +447,21 @@ async function handleSendMessage(messageText, container) {
   }
 
   try {
-    const lang = getLanguage();
+    const lang = getLanguage() || 'mr';
     const res = await api.sendChat(messageText, lang, state.sessionId);
 
     // Remove thinking message
     state.messages.pop();
 
     // 3. Add Bot Response message
-    const botReply = res.reply || 'Could not process query.';
+    const botReply = res.reply || 'माहिती उपलब्ध होऊ शकली नाही.';
+    const responseLang = res.language || 'mr';
     state.messages.push({
       sender: 'bot',
       text: botReply,
       intent: res.intent,
       data: res.data,
+      language: responseLang,
       time: formatTime(new Date())
     });
 
@@ -471,17 +474,51 @@ async function handleSendMessage(messageText, container) {
     }
 
     // 4. Speak response audio (if voice not muted)
-    // Always showing the text is preserved above; voice synthesis runs concurrently
-    voice.speak(botReply, lang);
+    // Always spoken in the response's native language (Marathi priority)
+    voice.speak(botReply, responseLang);
 
   } catch (err) {
     console.error('Chat request error:', err);
     state.messages.pop(); // Remove thinking
 
+    const userLang = getLanguage() || 'mr';
+    let friendlyError = '';
+
+    if (err.isTimeout) {
+      if (userLang === 'mr') {
+        friendlyError = '⚠️ सर्व्हरकडून प्रतिसाद मिळण्यास उशीर झाला. कृपया इंटरनेट तपासा आणि खालील बटण दाबून पुन्हा प्रयत्न करा.';
+      } else if (userLang === 'hi') {
+        friendlyError = '⚠️ सर्वर से उत्तर मिलने में अधिक समय लगा। कृपया इंटरनेट जांचें और पुनः प्रयास करें।';
+      } else {
+        friendlyError = '⚠️ Request timed out. Please check your internet connection and try again.';
+      }
+    } else if (err.isNetworkError || (err.message && err.message.toLowerCase().includes('failed to fetch'))) {
+      if (userLang === 'mr') {
+        friendlyError = '⚠️ मंडी साथी बॅकएंड सर्व्हरशी संपर्क होऊ शकला नाही (Port 8000 ऑफलाइन आहे). कृपया टर्मिनलमध्ये `python -m uvicorn backend.main:app --port 8000` सुरू असल्याची खात्री करा आणि खालील बटण दाबून पुन्हा प्रयत्न करा.';
+      } else if (userLang === 'hi') {
+        friendlyError = '⚠️ मंडी साथी बैकएंड सर्वर से संपर्क नहीं हो पाया (Port 8000 ऑफलाइन है)। कृपया टर्मिनल में `python -m uvicorn backend.main:app --port 8000` शुरू करें और पुनः प्रयास करें।';
+      } else {
+        friendlyError = '⚠️ Unable to connect to Mandi Saathi backend service (Port 8000 is unreachable). Please ensure the Python server is running.';
+      }
+    } else if (err.status && err.status >= 500) {
+      if (userLang === 'mr') {
+        friendlyError = `⚠️ सर्व्हरवर तांत्रिक अडचण आली (${err.message || '500'}). कृपया थोड्या वेळाने पुन्हा प्रयत्न करा.`;
+      } else if (userLang === 'hi') {
+        friendlyError = `⚠️ सर्वर पर तकनीकी समस्या आई (${err.message || '500'})। कृपया थोड़ी देर बाद पुनः प्रयास करें।`;
+      } else {
+        friendlyError = `⚠️ Server processing error (${err.message || '500'}). Please try again shortly.`;
+      }
+    } else {
+      friendlyError = `${t('chat_error_network')} (${err.message || 'Error'})`;
+    }
+
     state.messages.push({
       sender: 'bot',
-      text: `⚠️ Error contacting advisor service: ${err.message || 'Please check if server is running.'}`,
+      text: friendlyError,
+      isError: true,
+      retryText: messageText,
       data: null,
+      language: userLang,
       time: formatTime(new Date())
     });
 
@@ -489,6 +526,7 @@ async function handleSendMessage(messageText, container) {
       msgContainer.innerHTML = renderMessagesHtml(state.messages);
       if (window.lucide) window.lucide.createIcons();
       scrollToBottom(container);
+      bindBubbleEvents(container);
     }
   } finally {
     state.isSending = false;
@@ -496,11 +534,23 @@ async function handleSendMessage(messageText, container) {
 }
 
 function bindBubbleEvents(container) {
+  // Re-listen audio buttons on bot bubbles
   container.querySelectorAll('.btn-bubble-listen').forEach((btn) => {
     btn.addEventListener('click', () => {
       const rawText = btn.getAttribute('data-text');
+      const bubbleLang = btn.getAttribute('data-lang') || getLanguage() || 'mr';
       if (rawText) {
-        voice.speak(rawText, getLanguage());
+        voice.speak(rawText, bubbleLang);
+      }
+    });
+  });
+
+  // Retry buttons on error bubbles
+  container.querySelectorAll('.btn-chat-retry').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const retryText = btn.getAttribute('data-retry');
+      if (retryText && !state.isSending) {
+        handleSendMessage(retryText, container);
       }
     });
   });

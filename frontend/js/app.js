@@ -27,9 +27,10 @@ window.showToast = function (message, type = 'info') {
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
-  // Set initial language from storage
+  // Set initial language from storage (defaults to Marathi 'mr')
   const currentLang = getLanguage();
   document.documentElement.lang = currentLang;
+  translatePage();
 
   // Bind Language Switcher Buttons
   document.querySelectorAll('.lang-btn').forEach((btn) => {
